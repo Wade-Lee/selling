@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GuiSell</class>
+ <widget class="QWidget" name="GuiSell">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>199</width>
+    <height>222</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>200</width>
+    <height>250</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="1">
+    <widget class="QLabel" name="accountInfo">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="stockNameName">
+     <property name="text">
+      <string>股票名称</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLabel" name="stockName">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="stockCodeName">
+     <property name="text">
+      <string>股票代码</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="stockCode">
+     <property name="placeholderText">
+      <string>6位数字</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="sellPriceName">
+     <property name="text">
+      <string>卖出价格</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QDoubleSpinBox" name="sellPrice">
+     <property name="maximum">
+      <double>999999.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="sellableQtyName">
+     <property name="text">
+      <string>可卖股数</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="sellQtyName">
+     <property name="text">
+      <string>卖出数量</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="sellQty">
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+     <property name="insertPolicy">
+      <enum>QComboBox::NoInsert</enum>
+     </property>
+     <item>
+      <property name="text">
+       <string/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>全仓</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1/2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1/3</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1/4</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1/5</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1/10</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>自定义分母</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QPushButton" name="clearBtn">
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
+     <property name="text">
+      <string>重置</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QPushButton" name="sellBtn">
+     <property name="text">
+      <string>卖出</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="sellableQty">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>stockCode</sender>
+   <signal>returnPressed()</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserReqStockInfo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>121</x>
+     <y>83</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>329</x>
+     <y>137</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>stockCode</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserEditStockCode(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>131</x>
+     <y>83</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>324</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sellPrice</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserEditSellPrice(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>107</x>
+     <y>118</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>281</x>
+     <y>178</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sellQty</sender>
+   <signal>activated(int)</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserSelectSellQty(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>148</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>285</x>
+     <y>211</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sellQty</sender>
+   <signal>editTextChanged(QString)</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserEditSellQty(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>141</x>
+     <y>166</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>316</x>
+     <y>203</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sellBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserReqSelling()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>114</x>
+     <y>198</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>143</x>
+     <y>273</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>clearBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserClear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>34</x>
+     <y>195</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>35</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sellableQty</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiSell</receiver>
+   <slot>UserReqSellAllQty()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>101</x>
+     <y>145</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>532</x>
+     <y>321</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>UserReqStockInfo()</slot>
+  <slot>UserEditStockCode(QString)</slot>
+  <slot>UserEditSellPrice(double)</slot>
+  <slot>UserSelectSellQty(int)</slot>
+  <slot>UserEditSellQty(QString)</slot>
+  <slot>UserReqSelling()</slot>
+  <slot>UserClear()</slot>
+  <slot>UserReqSellAllQty()</slot>
+ </slots>
+</ui>

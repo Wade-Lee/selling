@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GuiMain</class>
+ <widget class="QWidget" name="GuiMain">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1400</width>
+    <height>1000</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="Upper" native="true">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="GuiAsset" name="assetL" native="true"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="accConnector">
+        <property name="text">
+         <string>关联账户</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="GuiAsset" name="assetR" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="Middle" native="true">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="GuiSell" name="sellL" native="true"/>
+      </item>
+      <item>
+       <widget class="GuiMarket" name="market" native="true"/>
+      </item>
+      <item>
+       <widget class="GuiSell" name="sellR" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="Lower" native="true">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="GuiTradeTab" name="tabL"/>
+      </item>
+      <item>
+       <widget class="GuiTradeTab" name="tabR"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GuiMarket</class>
+   <extends>QWidget</extends>
+   <header>gui_market.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GuiSell</class>
+   <extends>QWidget</extends>
+   <header>gui_sell.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GuiAsset</class>
+   <extends>QWidget</extends>
+   <header>gui_asset.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GuiTradeTab</class>
+   <extends>QTabWidget</extends>
+   <header>gui_tradetab.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>accConnector</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>GuiMain</receiver>
+   <slot>OnAccountConnected(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>672</x>
+     <y>31</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>678</x>
+     <y>-26</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnAccountConnected(bool)</slot>
+ </slots>
+</ui>

@@ -1,0 +1,28 @@
+[xtp]
+
+	[xtp.system]
+	client_id = 150	# XTP要求的客户端ID
+	log_path = "D:/workspace/release"
+	log_level = 3
+	resume_type = 2
+	hb_interval = 15
+
+	[xtp.trader]
+	version = "1.0"
+	software_key = "b8aa7173bba3470e390d787219b2112e"
+	ip = "120.27.164.69"
+	port = 6001
+
+	[xtp.quote]
+	ip = "120.27.164.138"
+	port = 6002
+
+[accounts]
+
+	[[accounts.table]]
+	user = "53191000812"
+	password = "PER0r7k8"
+
+	[[accounts.table]]
+	user = "53191000649"
+	password = "fyswP0M4"

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GuiOrderInsert</class>
+ <widget class="QWidget" name="GuiOrderInsert">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="orderTable">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="cornerButtonEnabled">
+      <bool>false</bool>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>委托时间</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>证券代码</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>证券名称</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>操作</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>委托数量</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>成交数量</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>撤销数量</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>委托价格</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

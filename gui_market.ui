@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GuiMarket</class>
+ <widget class="QWidget" name="GuiMarket">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>300</width>
+    <height>382</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>300</width>
+    <height>500</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item row="12" column="2">
+    <widget class="QLabel" name="bid_q4">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="1">
+    <widget class="QPushButton" name="upperBoundPrice">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 170, 127);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="2">
+    <widget class="QLabel" name="bid_q5">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="0">
+    <widget class="QLabel" name="ceilingPriceName">
+     <property name="text">
+      <string>涨跌停</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="2">
+    <widget class="QLabel" name="bid_q2">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="stockCode">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="2">
+    <widget class="QLabel" name="bid_q3">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="bid2">
+     <property name="text">
+      <string>买二</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="0">
+    <widget class="QLabel" name="bid5">
+     <property name="text">
+      <string>买五</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QLabel" name="ask_q1">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2">
+    <widget class="QLabel" name="lastChangePct">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="2">
+    <widget class="QPushButton" name="lowerBoundPrice">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(170, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="2">
+    <widget class="QLabel" name="bid_q1">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="ask4">
+     <property name="text">
+      <string>卖四</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLabel" name="ask_q5">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="bid3">
+     <property name="text">
+      <string>买三</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="bid4">
+     <property name="text">
+      <string>买四</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QLabel" name="ask_q3">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="ask3">
+     <property name="text">
+      <string>卖三</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="lastPriceName">
+     <property name="text">
+      <string>最新</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="ask1">
+     <property name="text">
+      <string>卖一</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="ask2">
+     <property name="text">
+      <string>卖二</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QLabel" name="ask_q2">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="bid1">
+     <property name="text">
+      <string>买一</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QPushButton" name="bid_p1">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 170, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="ask_q4">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="stockName">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="ask5">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>卖五</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QPushButton" name="lastPrice">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QPushButton" name="bid_p2">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 170, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <widget class="QPushButton" name="bid_p3">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 170, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="QPushButton" name="bid_p4">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 170, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <widget class="QPushButton" name="bid_p5">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 170, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QPushButton" name="ask_p1">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="ask_p2">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="ask_p3">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="ask_p4">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="ask_p5">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>upperBoundPrice</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqUpper()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>160</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lowerBoundPrice</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqLower()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>216</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>238</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lastPrice</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqLast()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>243</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>318</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bid_p1</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqBid1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>178</x>
+     <y>255</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>318</x>
+     <y>255</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bid_p2</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqBid2()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>338</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bid_p3</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqBid3()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>174</x>
+     <y>298</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bid_p4</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqBid4()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>177</x>
+     <y>327</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>446</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bid_p5</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqBid5()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>185</x>
+     <y>348</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>346</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ask_p1</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqAsk1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>177</x>
+     <y>210</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>313</x>
+     <y>211</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ask_p2</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqAsk2()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>160</x>
+     <y>185</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>326</x>
+     <y>190</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ask_p3</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqAsk3()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>182</x>
+     <y>167</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>350</x>
+     <y>162</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ask_p4</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqAsk4()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>160</x>
+     <y>139</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>326</x>
+     <y>144</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ask_p5</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiMarket</receiver>
+   <slot>UserReqAsk5()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>160</x>
+     <y>116</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>324</x>
+     <y>117</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>UserReqUpper()</slot>
+  <slot>UserReqLower()</slot>
+  <slot>UserReqLast()</slot>
+  <slot>UserReqBid1()</slot>
+  <slot>UserReqBid2()</slot>
+  <slot>UserReqBid3()</slot>
+  <slot>UserReqBid4()</slot>
+  <slot>UserReqBid5()</slot>
+  <slot>UserReqAsk1()</slot>
+  <slot>UserReqAsk2()</slot>
+  <slot>UserReqAsk3()</slot>
+  <slot>UserReqAsk4()</slot>
+  <slot>UserReqAsk5()</slot>
+ </slots>
+</ui>

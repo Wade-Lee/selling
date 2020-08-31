@@ -1,0 +1,8 @@
+/*
+!.gitignore
+!*.h
+!*.cpp
+!*.ui
+!*.toml
+!CMakeLists.txt
+!/config

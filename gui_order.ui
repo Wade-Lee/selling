@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GuiOrder</class>
+ <widget class="QWidget" name="GuiOrder">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>751</width>
+    <height>398</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="buttonWidgets" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="text">
+         <string>撤单</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelAllButton">
+        <property name="text">
+         <string>全撤</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="orderTable">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>40</number>
+     </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>40</number>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>证券代码</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>证券名称</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>价格</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>数量</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>操作</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>委托时间</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiOrder</receiver>
+   <slot>UserReqCancelOrders()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>150</x>
+     <y>33</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-47</x>
+     <y>7</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelAllButton</sender>
+   <signal>clicked()</signal>
+   <receiver>GuiOrder</receiver>
+   <slot>UserReqCancelAllOrders()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>424</x>
+     <y>22</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>6</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>UserReqCancelOrders()</slot>
+  <slot>UserReqCancelAllOrders()</slot>
+ </slots>
+</ui>
