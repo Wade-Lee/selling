@@ -110,8 +110,8 @@ namespace HuiFu
 
             for (size_t i = 0; i < nAccounts; i++)
             {
-                // 只在启动程序时查询一次持仓，应避免加已卖光的昨仓
-                if (session_id == mSessionIDs[i] && position->total_qty != 0)
+                // 只在启动程序时查询一次持仓，应避免加今仓和已卖光的昨仓
+                if (session_id == mSessionIDs[i] && position->yesterday_position != 0 && position->total_qty != 0)
                 {
                     qCInfo(XTPTrader) << QStringLiteral("加入持仓") << position->ticker_name << position->total_qty << position->sellable_qty;
 
@@ -120,13 +120,11 @@ namespace HuiFu
                         position->total_qty,
                         position->sellable_qty,
                         position->avg_price};
-                    TraderReqSubscribe(
-                        (position->market == XTP_MKT_SZ_A) ? XTP_EXCHANGE_SZ : XTP_EXCHANGE_SH,
-                        position->ticker);
 
                     AccountPositionReceived(i, PositionData{
                                                    position->ticker,
                                                    position->ticker_name,
+                                                   (position->market == XTP_MKT_SZ_A) ? XTP_EXCHANGE_SZ : XTP_EXCHANGE_SH,
                                                    position->total_qty,
                                                    position->sellable_qty});
                 }
@@ -186,9 +184,11 @@ namespace HuiFu
                     mAsset[i].buying_power = asset->buying_power;
                     mAsset[i].withholding_amount = asset->withholding_amount;
                     mAsset[i].security_asset = 0;
+                    qCInfo(XTPTrader) << QStringLiteral("仓位列表：");
                     for (auto &position : mAsset[i].positions)
                     {
                         mAsset[i].security_asset += position.second.total_qty * position.second.last_price;
+                        qCInfo(XTPTrader) << position.first << position.second.total_qty << position.second.last_price;
                     }
                     qCInfo(XTPTrader) << QStringLiteral("账户资金初始值：") << mAsset[i].buying_power << mAsset[i].withholding_amount << mAsset[i].security_asset;
                     AssetReceived(i, AssetData{mAsset[i].buying_power, mAsset[i].withholding_amount, mAsset[i].security_asset});
@@ -224,9 +224,6 @@ namespace HuiFu
 #pragma region 报单相关
     void Trader::OnSellReqSelling(size_t id, const QString &stock_code, double price, int64_t quantity)
     {
-        query_positions(mSessionIDs[id]);
-        qCInfo(XTPTrader) << QStringLiteral("提交报单前查询仓位：");
-
         XTP_MARKET_TYPE market = StockStaticInfo::GetInstance().GetMarket(stock_code);
         if (market == XTP_MKT_INIT || market == XTP_MKT_UNKNOWN)
         {
@@ -384,6 +381,11 @@ namespace HuiFu
         QString stock_code{order.ticker};
         auto &positions = mAsset[acc_index].positions;
 
+        if (positions.find(stock_code) == positions.end())
+        {
+            // 新建一个仓位
+            positions[stock_code] = Position{order.market, 0, 0, order.price};
+        }
         // 在仓位下新建一个挂单
         positions.at(stock_code)
             .resting_orders[order.order_xtp_id] = RestingOrder{
@@ -452,12 +454,7 @@ namespace HuiFu
             order.quantity,
             order.price};
 
-        if (is_start_late)
-        {
-            return;
-        }
-
-        // 刷新Position界面显示（可卖数量）
+        // 刷新Position和Sell界面显示（可卖数量）
         OrderSellReceived(acc_index, OrderData{
                                          order.order_xtp_id,
                                          order.ticker,
@@ -555,13 +552,17 @@ namespace HuiFu
         }
 
         position.sellable_qty += order.qty_left;
-
         if (is_start_late)
         {
-            return;
+            // 盘中重启时要剔除掉撤单的仓位
+            position.total_qty -= order.qty_left;
+            if (position.total_qty == 0)
+            {
+                positions.erase(stock_code);
+            }
         }
 
-        // 刷新Position界面显示（可卖数量）
+        // 刷新Position和Sell界面显示（可卖数量）
         OrderSellCanceled(acc_index, CancelData{
                                          order.order_xtp_id,
                                          order.ticker,
@@ -590,11 +591,6 @@ namespace HuiFu
         // 找到仓位下成交的挂单
         auto &resting_order = position.resting_orders.at(trade.order_xtp_id);
         resting_order.quantity -= trade.quantity; // 减少挂单数量
-
-        // 订阅股票行情
-        TraderReqSubscribe(
-            (trade.market == XTP_MKT_SZ_A) ? XTP_EXCHANGE_SZ : XTP_EXCHANGE_SH,
-            stock_code);
 
         // 更新仓位信息
         position.total_qty += trade.quantity;
@@ -629,11 +625,6 @@ namespace HuiFu
                                    trade.price,
                                    trade.quantity,
                                    trade.trade_amount});
-
-        if (is_start_late)
-        {
-            return;
-        }
 
         // 刷新Position界面显示
         OrderBuyTraded(acc_index, TradeData{
@@ -698,11 +689,6 @@ namespace HuiFu
                                    trade.price,
                                    trade.quantity,
                                    trade.trade_amount});
-
-        if (is_start_late)
-        {
-            return;
-        }
 
         // 刷新Position界面显示
         OrderSellTraded(acc_index, TradeData{
@@ -787,5 +773,19 @@ namespace HuiFu
             pTraderApi->Release();
             pTraderApi = nullptr;
         }
+    }
+
+    TraderController::TraderController()
+    {
+        pTrader = new Trader;
+        pTrader->moveToThread(&traderThread);
+        connect(&traderThread, &QThread::finished, pTrader, &QObject::deleteLater);
+        traderThread.start();
+    }
+
+    TraderController::~TraderController()
+    {
+        traderThread.quit();
+        traderThread.wait();
     }
 } // namespace HuiFu

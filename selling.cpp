@@ -1,5 +1,7 @@
 ﻿#include "config.h"
 #include "gui_main.h"
+#include "quote.h"
+#include "trader.h"
 
 #include <QApplication>
 
@@ -14,7 +16,9 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    GuiMain w;
+    QuoteController quoteController;
+    TraderController traderController;
+    GuiMain w{quoteController, traderController};
     w.show();
     return a.exec();
 }

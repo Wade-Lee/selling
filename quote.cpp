@@ -71,7 +71,7 @@ namespace HuiFu
         }
     }
 
-    void Quote::OnTraderReqSubscribe(XTP_EXCHANGE_TYPE exchange_id, const QString &stock_code)
+    void Quote::OnPositionReqSubscribe(XTP_EXCHANGE_TYPE exchange_id, const QString &stock_code)
     {
         if (mTraderStocks.find(stock_code) == mTraderStocks.end())
         {
@@ -164,7 +164,7 @@ namespace HuiFu
 #pragma endregion
 
 #pragma region 退订快照
-    void Quote::OnTraderReqUnSubscribe(const QString &stock_code)
+    void Quote::OnPositionReqUnSubscribe(const QString &stock_code)
     {
         mTraderStocks.erase(stock_code);
     }
@@ -270,4 +270,19 @@ namespace HuiFu
         }
     }
 #pragma endregion
+
+    QuoteController::QuoteController()
+    {
+        pQuote = new Quote;
+        pQuote->moveToThread(&quoteThread);
+        connect(&quoteThread, &QThread::finished, pQuote, &QObject::deleteLater);
+        quoteThread.start();
+        pQuote->login();
+    }
+
+    QuoteController::~QuoteController()
+    {
+        quoteThread.quit();
+        quoteThread.wait();
+    }
 } // namespace HuiFu

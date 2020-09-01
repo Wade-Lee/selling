@@ -145,15 +145,18 @@ namespace HuiFu
     {
         StockCode stock_code;
         QString stock_name;
+        XTP_EXCHANGE_TYPE exchange_id;
         int64_t total_qty;
         int64_t sellable_qty;
 
         PositionData(
             const QString &code,
             const QString &name,
+            XTP_EXCHANGE_TYPE exchange,
             const int64_t total,
             const int64_t sellable) : stock_code(code),
                                       stock_name(name),
+                                      exchange_id(exchange),
                                       total_qty(total),
                                       sellable_qty(sellable)
         {

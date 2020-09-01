@@ -4,7 +4,7 @@
 	client_id = 150	# XTP要求的客户端ID
 	log_path = "D:/workspace/release"
 	log_level = 3
-	resume_type = 2
+	resume_type = 0
 	hb_interval = 15
 
 	[xtp.trader]

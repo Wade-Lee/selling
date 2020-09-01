@@ -7,6 +7,7 @@
 Q_DECLARE_LOGGING_CATEGORY(XTPQuote)
 
 #include <QObject>
+#include <QThread>
 #include <unordered_set>
 
 namespace HuiFu
@@ -24,9 +25,9 @@ namespace HuiFu
 
     public slots:
         void OnMarketReqSubscribe(int, const QString &);
-        void OnTraderReqSubscribe(XTP_EXCHANGE_TYPE, const QString &);
+        void OnPositionReqSubscribe(XTP_EXCHANGE_TYPE, const QString &);
         // TODO：
-        void OnTraderReqUnSubscribe(const QString &);
+        void OnPositionReqUnSubscribe(const QString &);
 
     signals:
         void QuoteError() const;
@@ -80,6 +81,19 @@ namespace HuiFu
         ~Quote();
     };
 
+    class QuoteController : public QObject
+    {
+        Q_OBJECT
+
+    private:
+        QThread quoteThread;
+        Quote *pQuote;
+
+    public:
+        QuoteController();
+        ~QuoteController();
+        Quote *GetQuote() const { return pQuote; }
+    };
 } // namespace HuiFu
 
 #endif

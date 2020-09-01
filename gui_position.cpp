@@ -24,7 +24,7 @@ GuiPosition::GuiPosition(QWidget *parent) : QWidget(parent),
         int total_qty = qobject_cast<QSpinBox *>(ui->positionTable->cellWidget(row, 2))->value();
         int sellable_qty = qobject_cast<QSpinBox *>(ui->positionTable->cellWidget(row, 3))->value();
         double price = qobject_cast<QDoubleSpinBox *>(ui->positionTable->cellWidget(row, 4))->value();
-        UserSelectPosition(PositionData{stock_code, stock_name, total_qty, sellable_qty}, price); });
+        UserSelectPosition(PositionData{stock_code, stock_name, XTP_EXCHANGE_UNKNOWN, total_qty, sellable_qty}, price); });
 }
 
 GuiPosition::~GuiPosition()
@@ -53,6 +53,10 @@ void GuiPosition::OnPositionReceived(size_t id_, const PositionData &d)
     {
         return;
     }
+
+    PositionReqSubscribe(
+        d.exchange_id,
+        d.stock_code);
 
     insert_row(d.stock_code, d.stock_name, d.total_qty, d.sellable_qty);
 }
@@ -152,6 +156,9 @@ void GuiPosition::OnOrderBuyTraded(size_t id_, const TradeData &d)
         if (pQSI)
         {
             stock_name = pQSI->ticker_name;
+            PositionReqSubscribe(
+                pQSI->exchange_id,
+                d.stock_code);
         }
         insert_row(d.stock_code, stock_name, d.quantity, 0, d.price);
     }

@@ -53,6 +53,8 @@ public slots:
 	void UserEditSellQty(QString);
 	void UserReqSellAllQty();
 	void OnPositionReceived(size_t, const QString &, long);
+	void OnOrderSellReceived(size_t, const HuiFu::OrderData &);
+	void OnOrderSellCanceled(size_t, const HuiFu::CancelData &);
 
 signals:
 	void SellReqPosition(size_t, const QString &) const;
@@ -84,17 +86,6 @@ signals:
 private:
 	void req_selling() const;
 #pragma endregion
-
-	// void ReqInsertOrder(const QString &, double, long, bool) const;
-	// void SellPriceEdited(int, double) const;
-	// void SellQtySelected(int, int) const;
-	// void ReqSellStock(int) const;
-
-	// void UpdatePosition(const QString &, const QString &, long, long) const;
-	// void OnStockCodeEdited(const QString &) const;
-	// void OnSellPriceEdited(double) const;
-	// void OnSellQtyActivated(int) const;
-	// void OnSellQtyEditTextChanged(const QString &text);
 
 #pragma region 属性成员
 private:

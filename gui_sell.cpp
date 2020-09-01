@@ -60,6 +60,7 @@ void GuiSell::UserReqStockInfo()
 void GuiSell::OnUserSelectPosition(const PositionData &d, double price)
 {
 	ui->sellPrice->setFocus();
+	ui->sellPrice->selectAll();
 
 	SetStockCode(d.stock_code);
 	SetStockName(d.stock_name);
@@ -111,6 +112,8 @@ void GuiSell::init_sell_qty()
 	ui->sellQty->lineEdit()->setValidator(ival);
 	// 取消自动补全
 	ui->sellQty->setCompleter(0);
+
+	SetSellableQty();
 }
 
 void GuiSell::UserSelectSellQty(int index)
@@ -150,6 +153,24 @@ void GuiSell::OnPositionReceived(size_t id_, const QString &stock_code, long sel
 	{
 		current_stock_code = stock_code;
 		SetSellableQty(sellable_qty);
+	}
+}
+
+void GuiSell::OnOrderSellReceived(size_t id_, const OrderData &d)
+{
+	if (id == id_ && current_stock_code == d.stock_code)
+	{
+		int sellable_qty = ui->sellableQty->text().toInt();
+		SetSellableQty(sellable_qty - d.quantity);
+	}
+}
+
+void GuiSell::OnOrderSellCanceled(size_t id_, const CancelData &d)
+{
+	if (id == id_ && current_stock_code == d.stock_code)
+	{
+		int sellable_qty = ui->sellableQty->text().toInt();
+		SetSellableQty(sellable_qty + d.qty_left);
 	}
 }
 
@@ -299,12 +320,3 @@ void GuiSell::UserClear()
 	SetSellableQty();
 }
 #pragma endregion
-
-// void GuiSell::UpdatePosition(const QString &ticker_code, const QString &ticker_name, long total_qty, long sellable_qty) const
-// {
-// 	if (ui->stockCode->text() == ticker_code)
-// 	{
-// 		ui->sellableQty->setValue(sellable_qty);
-// 		updateSellQty(sellable_qty);
-// 	}
-// }

@@ -7,6 +7,7 @@
 Q_DECLARE_LOGGING_CATEGORY(XTPTrader)
 
 #include <QObject>
+#include <QThread>
 #include <vector>
 #include <map>
 
@@ -60,7 +61,6 @@ namespace HuiFu
     signals:
         void TraderError() const;
         void TraderLogin(size_t) const;
-        void TraderReqSubscribe(XTP_EXCHANGE_TYPE, const QString &) const;
         void SellPositionReceived(size_t, const QString &, long) const;
         void AccountPositionReceived(size_t, const PositionData &);
         void OrderReceived(size_t, const OrderData &) const;
@@ -122,6 +122,20 @@ namespace HuiFu
     public:
         Trader(QObject *parent = nullptr);
         ~Trader();
+    };
+
+    class TraderController : public QObject
+    {
+        Q_OBJECT
+
+    private:
+        QThread traderThread;
+        Trader *pTrader;
+
+    public:
+        TraderController();
+        ~TraderController();
+        Trader *GetTrader() const { return pTrader; }
     };
 } // namespace HuiFu
 #endif

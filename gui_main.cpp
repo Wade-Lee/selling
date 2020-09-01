@@ -13,11 +13,11 @@
 
 using namespace std;
 
-GuiMain::GuiMain(QWidget *parent)
+GuiMain::GuiMain(const QuoteController &quoteController, const TraderController &traderController, QWidget *parent)
     : QWidget(parent),
       ui(new Ui::GuiMain),
-      pTrader(make_unique<Trader>()),
-      pQuote(make_unique<Quote>()),
+      pTrader(traderController.GetTrader()),
+      pQuote(quoteController.GetQuote()),
       accounts_connected(true)
 {
     ui->setupUi(this);
@@ -25,9 +25,6 @@ GuiMain::GuiMain(QWidget *parent)
     gui_sells = ui->Middle->findChildren<GuiSell *>();
 
     nAccounts = Config::get_instance().get_account_num();
-
-    //初始化行情连接
-    pQuote->login();
 
     register_bind();
 }
@@ -49,19 +46,20 @@ void GuiMain::register_bind() const
     qRegisterMetaType<size_t>("size_t&");
     qRegisterMetaType<int64_t>("int64_t");
     qRegisterMetaType<int64_t>("int64_t&");
+    qRegisterMetaType<uint64_t>("uint64_t");
+    qRegisterMetaType<uint64_t>("uint64_t&");
     qRegisterMetaType<XTP_EXCHANGE_TYPE>("XTP_EXCHANGE_TYPE");
     qRegisterMetaType<XTP_EXCHANGE_TYPE>("XTP_EXCHANGE_TYPE&");
 
-    QObject::connect(pQuote.get(), &Quote::QuoteError, this, &GuiMain::OnQuoteError);
-    QObject::connect(pTrader.get(), &Trader::TraderError, this, &GuiMain::OnTraderError);
+    QObject::connect(pQuote, &Quote::QuoteError, this, &GuiMain::OnQuoteError);
+    QObject::connect(pTrader, &Trader::TraderError, this, &GuiMain::OnTraderError);
 
     // Trader <-> Quote
-    QObject::connect(pTrader.get(), &Trader::TraderReqSubscribe, pQuote.get(), &Quote::OnTraderReqSubscribe);
-    QObject::connect(pQuote.get(), &Quote::PositionQuoteReceived, pTrader.get(), &Trader::OnPositionQuoteReceived);
+    QObject::connect(pQuote, &Quote::PositionQuoteReceived, pTrader, &Trader::OnPositionQuoteReceived);
 
     // Market <- Quote
-    QObject::connect(pQuote.get(), &Quote::Subscribed, ui->market, &GuiMarket::OnSubscribed);
-    QObject::connect(pQuote.get(), &Quote::MarketDataReceived, ui->market, &GuiMarket::OnMarketDataReceived);
+    QObject::connect(pQuote, &Quote::Subscribed, ui->market, &GuiMarket::OnSubscribed);
+    QObject::connect(pQuote, &Quote::MarketDataReceived, ui->market, &GuiMarket::OnMarketDataReceived);
 
     QList<GuiPosition *> gui_positions = ui->Lower->findChildren<GuiPosition *>();
     QList<GuiOrder *> gui_orders = ui->Lower->findChildren<GuiOrder *>();
@@ -75,11 +73,13 @@ void GuiMain::register_bind() const
         // Sell <- Market
         QObject::connect(ui->market, &GuiMarket::UserSelectPrice, &sell, &GuiSell::OnUserSelectPrice);
         // Sell <-> Quote
-        QObject::connect(&sell, &GuiSell::MarketReqSubscribe, pQuote.get(), &Quote::OnMarketReqSubscribe);
+        QObject::connect(&sell, &GuiSell::MarketReqSubscribe, pQuote, &Quote::OnMarketReqSubscribe);
         // Sell <-> Trader
-        QObject::connect(&sell, &GuiSell::SellReqPosition, pTrader.get(), &Trader::OnSellReqPosition);
-        QObject::connect(pTrader.get(), &Trader::SellPositionReceived, &sell, &GuiSell::OnPositionReceived);
-        QObject::connect(&sell, &GuiSell::SellReqSelling, pTrader.get(), &Trader::OnSellReqSelling);
+        QObject::connect(&sell, &GuiSell::SellReqPosition, pTrader, &Trader::OnSellReqPosition);
+        QObject::connect(pTrader, &Trader::SellPositionReceived, &sell, &GuiSell::OnPositionReceived);
+        QObject::connect(&sell, &GuiSell::SellReqSelling, pTrader, &Trader::OnSellReqSelling);
+        QObject::connect(pTrader, &Trader::OrderSellReceived, &sell, &GuiSell::OnOrderSellReceived);
+        QObject::connect(pTrader, &Trader::OrderSellCanceled, &sell, &GuiSell::OnOrderSellCanceled);
         // Sell -> Sell
         QObject::connect(&sell, &GuiSell::SellReqSyncStockCode, this, &GuiMain::OnSellReqSyncStockCode);
         QObject::connect(&sell, &GuiSell::SellReqSyncStockInfo, this, &GuiMain::OnSellReqSyncStockInfo);
@@ -89,40 +89,41 @@ void GuiMain::register_bind() const
 
         auto &position = *gui_positions[i];
         // Position <-> Trader
-        QObject::connect(pTrader.get(), &Trader::TraderLogin, &position, &GuiPosition::OnTraderLogin);
-        QObject::connect(pTrader.get(), &Trader::AccountPositionReceived, &position, &GuiPosition::OnPositionReceived);
-        QObject::connect(pTrader.get(), &Trader::OrderSellReceived, &position, &GuiPosition::OnOrderSellReceived);
-        QObject::connect(pTrader.get(), &Trader::OrderSellCanceled, &position, &GuiPosition::OnOrderSellCanceled);
-        QObject::connect(pTrader.get(), &Trader::OrderSellTraded, &position, &GuiPosition::OnOrderSellTraded);
-        QObject::connect(pTrader.get(), &Trader::OrderBuyTraded, &position, &GuiPosition::OnOrderBuyTraded);
+        QObject::connect(pTrader, &Trader::TraderLogin, &position, &GuiPosition::OnTraderLogin);
+        QObject::connect(pTrader, &Trader::AccountPositionReceived, &position, &GuiPosition::OnPositionReceived);
+        QObject::connect(pTrader, &Trader::OrderSellReceived, &position, &GuiPosition::OnOrderSellReceived);
+        QObject::connect(pTrader, &Trader::OrderSellCanceled, &position, &GuiPosition::OnOrderSellCanceled);
+        QObject::connect(pTrader, &Trader::OrderSellTraded, &position, &GuiPosition::OnOrderSellTraded);
+        QObject::connect(pTrader, &Trader::OrderBuyTraded, &position, &GuiPosition::OnOrderBuyTraded);
+        QObject::connect(&position, &GuiPosition::PositionReqSubscribe, pQuote, &Quote::OnPositionReqSubscribe);
         // Position <- Quote
-        QObject::connect(pQuote.get(), &Quote::PositionQuoteReceived, &position, &GuiPosition::OnPositionQuoteReceived);
+        QObject::connect(pQuote, &Quote::PositionQuoteReceived, &position, &GuiPosition::OnPositionQuoteReceived);
         // Position -> Sell
         QObject::connect(&position, &GuiPosition::UserSelectPosition, &sell, &GuiSell::OnUserSelectPosition);
 
         auto &order = *gui_orders[i];
         // Order <-> Trader
-        QObject::connect(pTrader.get(), &Trader::TraderLogin, &order, &GuiOrder::OnTraderLogin);
-        QObject::connect(pTrader.get(), &Trader::OrderReceived, &order, &GuiOrder::OnOrderReceived);
-        QObject::connect(pTrader.get(), &Trader::OrderTraded, &order, &GuiOrder::OnOrderTraded);
-        QObject::connect(pTrader.get(), &Trader::OrderCanceled, &order, &GuiOrder::OnOrderCanceled);
-        QObject::connect(&order, &GuiOrder::ReqCancelOrder, pTrader.get(), &Trader::OnReqCancelOrder);
+        QObject::connect(pTrader, &Trader::TraderLogin, &order, &GuiOrder::OnTraderLogin);
+        QObject::connect(pTrader, &Trader::OrderReceived, &order, &GuiOrder::OnOrderReceived);
+        QObject::connect(pTrader, &Trader::OrderTraded, &order, &GuiOrder::OnOrderTraded);
+        QObject::connect(pTrader, &Trader::OrderCanceled, &order, &GuiOrder::OnOrderCanceled);
+        QObject::connect(&order, &GuiOrder::ReqCancelOrder, pTrader, &Trader::OnReqCancelOrder);
 
         auto &order_trade = *gui_order_trades[i];
         // OrderTrade <- Trader
-        QObject::connect(pTrader.get(), &Trader::TraderLogin, &order_trade, &GuiOrderTrade::OnTraderLogin);
-        QObject::connect(pTrader.get(), &Trader::OrderTraded, &order_trade, &GuiOrderTrade::OnOrderTraded);
+        QObject::connect(pTrader, &Trader::TraderLogin, &order_trade, &GuiOrderTrade::OnTraderLogin);
+        QObject::connect(pTrader, &Trader::OrderTraded, &order_trade, &GuiOrderTrade::OnOrderTraded);
 
         auto &order_insert = *gui_order_inserts[i];
         // OrderInsert <- Trader
-        QObject::connect(pTrader.get(), &Trader::TraderLogin, &order_insert, &GuiOrderInsert::OnTraderLogin);
-        QObject::connect(pTrader.get(), &Trader::OrderReceived, &order_insert, &GuiOrderInsert::OnOrderReceived);
-        QObject::connect(pTrader.get(), &Trader::OrderTraded, &order_insert, &GuiOrderInsert::OnOrderTraded);
-        QObject::connect(pTrader.get(), &Trader::OrderCanceled, &order_insert, &GuiOrderInsert::OnOrderCanceled);
+        QObject::connect(pTrader, &Trader::TraderLogin, &order_insert, &GuiOrderInsert::OnTraderLogin);
+        QObject::connect(pTrader, &Trader::OrderReceived, &order_insert, &GuiOrderInsert::OnOrderReceived);
+        QObject::connect(pTrader, &Trader::OrderTraded, &order_insert, &GuiOrderInsert::OnOrderTraded);
+        QObject::connect(pTrader, &Trader::OrderCanceled, &order_insert, &GuiOrderInsert::OnOrderCanceled);
 
         auto &asset = *gui_assets[i];
         // Asset <- Trader
-        QObject::connect(pTrader.get(), &Trader::AssetReceived, &asset, &GuiAsset::OnAssetReceived);
+        QObject::connect(pTrader, &Trader::AssetReceived, &asset, &GuiAsset::OnAssetReceived);
 
         //初始化交易连接
         pTrader->login(i);

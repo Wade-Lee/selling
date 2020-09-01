@@ -27,6 +27,7 @@ public slots:
 
 signals:
     void UserSelectPosition(const HuiFu::PositionData &, double) const;
+    void PositionReqSubscribe(XTP_EXCHANGE_TYPE, const QString &) const;
 
 #pragma region 属性成员
 private:

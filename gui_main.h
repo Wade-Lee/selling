@@ -44,13 +44,13 @@ private:
 #pragma endregion
 
 public:
-    explicit GuiMain(QWidget *parent = nullptr);
+    explicit GuiMain(const QuoteController &, const TraderController &, QWidget *parent = nullptr);
     ~GuiMain();
 
 private:
     Ui::GuiMain *ui;
 
-    std::unique_ptr<Trader> pTrader;
-    std::unique_ptr<Quote> pQuote;
+    Trader *pTrader;
+    Quote *pQuote;
 };
 #endif // GUI_MAIN_H
