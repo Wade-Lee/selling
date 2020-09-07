@@ -15,15 +15,18 @@ GuiSelectOrder::~GuiSelectOrder()
 void GuiSelectOrder::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
-    {
-        bool checked = ui->checkBox->isChecked();
-        ui->checkBox->setChecked(!checked);
-    }
+        Activate();
 }
 
 void GuiSelectOrder::SetStockCode(const QString &stock_code) const
 {
     ui->stockCode->setText(stock_code);
+}
+
+void GuiSelectOrder::Activate() const
+{
+    bool checked = ui->checkBox->isChecked();
+    ui->checkBox->setChecked(!checked);
 }
 
 void GuiSelectOrder::SetSelect(bool bChecked) const

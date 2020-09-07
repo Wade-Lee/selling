@@ -3,12 +3,9 @@
 #include "./ui_gui_main.h"
 
 #include "gui_market.h"
-#include "gui_position.h"
-#include "gui_order.h"
-#include "gui_order_trade.h"
-#include "gui_order_insert.h"
 #include "gui_asset.h"
 
+#include <QKeyEvent>
 #include <QMessageBox>
 
 using namespace std;
@@ -23,6 +20,7 @@ GuiMain::GuiMain(const QuoteController &quoteController, const TraderController 
     ui->setupUi(this);
 
     gui_sells = ui->Middle->findChildren<GuiSell *>();
+    gui_trades = ui->Lower->findChildren<GuiTradeTab *>();
 
     nAccounts = Config::get_instance().get_account_num();
 
@@ -38,6 +36,67 @@ GuiMain::~GuiMain()
     pQuote->logout();
     delete ui;
 }
+
+#pragma region 键盘事件
+void GuiMain::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key())
+    {
+    case Qt::Key_F9:
+        connect_accounts();
+        break;
+    case Qt::Key_F1:
+        if (!accounts_connected)
+        {
+            for (size_t i = 0; i < gui_sells.size(); i++)
+            {
+                gui_sells[i]->Activate(false);
+            }
+        }
+        gui_sells[0]->SetFocus();
+        break;
+    case Qt::Key_F2:
+        if (!accounts_connected)
+        {
+            for (size_t i = 0; i < gui_sells.size(); i++)
+            {
+                gui_sells[i]->Activate(false);
+            }
+        }
+        if (gui_sells.size() > 0)
+            gui_sells[1]->SetFocus();
+        break;
+    case Qt::Key_D:
+        gui_trades[0]->SetFocus(0);
+        break;
+    case Qt::Key_F:
+        if (gui_trades.size() > 0)
+            gui_trades[1]->SetFocus(0);
+        break;
+    case Qt::Key_S:
+        gui_trades[0]->SetFocus(1);
+        break;
+    case Qt::Key_G:
+        if (gui_trades.size() > 0)
+            gui_trades[1]->SetFocus(1);
+        break;
+    case Qt::Key_W:
+        for (size_t i = 0; i < gui_trades.size(); i++)
+            gui_trades[i]->setCurrentIndex(2);
+        break;
+    case Qt::Key_E:
+        for (size_t i = 0; i < gui_trades.size(); i++)
+            gui_trades[i]->setCurrentIndex(3);
+        break;
+    case Qt::Key_R:
+        for (size_t i = 0; i < gui_trades.size(); i++)
+            gui_trades[i]->setCurrentIndex(4);
+        break;
+    default:
+        break;
+    }
+}
+#pragma endregion
 
 #pragma region 关联事件
 void GuiMain::register_bind() const
@@ -61,25 +120,19 @@ void GuiMain::register_bind() const
     QObject::connect(pQuote, &Quote::Subscribed, ui->market, &GuiMarket::OnSubscribed);
     QObject::connect(pQuote, &Quote::MarketDataReceived, ui->market, &GuiMarket::OnMarketDataReceived);
 
-    QList<GuiPosition *> gui_positions = ui->Lower->findChildren<GuiPosition *>();
-    QList<GuiOrder *> gui_orders = ui->Lower->findChildren<GuiOrder *>();
-    QList<GuiOrderTrade *> gui_order_trades = ui->Lower->findChildren<GuiOrderTrade *>();
-    QList<GuiOrderInsert *> gui_order_inserts = ui->Lower->findChildren<GuiOrderInsert *>();
     QList<GuiAsset *> gui_assets = ui->Upper->findChildren<GuiAsset *>();
 
     for (size_t i = 0; i < nAccounts; i++)
     {
         auto &sell = *gui_sells[i];
-        // Sell <- Market
-        QObject::connect(ui->market, &GuiMarket::UserSelectPrice, &sell, &GuiSell::OnUserSelectPrice);
         // Sell <-> Quote
         QObject::connect(&sell, &GuiSell::MarketReqSubscribe, pQuote, &Quote::OnMarketReqSubscribe);
         // Sell <-> Trader
         QObject::connect(&sell, &GuiSell::SellReqPosition, pTrader, &Trader::OnSellReqPosition);
         QObject::connect(pTrader, &Trader::SellPositionReceived, &sell, &GuiSell::OnPositionReceived);
         QObject::connect(&sell, &GuiSell::SellReqSelling, pTrader, &Trader::OnSellReqSelling);
-        QObject::connect(pTrader, &Trader::OrderSellReceived, &sell, &GuiSell::OnOrderSellReceived);
-        QObject::connect(pTrader, &Trader::OrderSellCanceled, &sell, &GuiSell::OnOrderSellCanceled);
+        QObject::connect(pTrader, &Trader::OrderReceived, &sell, &GuiSell::OnOrderReceived);
+        QObject::connect(pTrader, &Trader::OrderCanceled, &sell, &GuiSell::OnOrderCanceled);
         // Sell -> Sell
         QObject::connect(&sell, &GuiSell::SellReqSyncStockCode, this, &GuiMain::OnSellReqSyncStockCode);
         QObject::connect(&sell, &GuiSell::SellReqSyncStockInfo, this, &GuiMain::OnSellReqSyncStockInfo);
@@ -87,39 +140,19 @@ void GuiMain::register_bind() const
         QObject::connect(&sell, &GuiSell::SellReqSyncSellQty, this, &GuiMain::OnSellReqSyncSellQty);
         QObject::connect(&sell, &GuiSell::SellReqSyncSellQtyText, this, &GuiMain::OnSellReqSyncSellQtyText);
 
-        auto &position = *gui_positions[i];
-        // Position <-> Trader
-        QObject::connect(pTrader, &Trader::TraderLogin, &position, &GuiPosition::OnTraderLogin);
-        QObject::connect(pTrader, &Trader::AccountPositionReceived, &position, &GuiPosition::OnPositionReceived);
-        QObject::connect(pTrader, &Trader::OrderSellReceived, &position, &GuiPosition::OnOrderSellReceived);
-        QObject::connect(pTrader, &Trader::OrderSellCanceled, &position, &GuiPosition::OnOrderSellCanceled);
-        QObject::connect(pTrader, &Trader::OrderSellTraded, &position, &GuiPosition::OnOrderSellTraded);
-        QObject::connect(pTrader, &Trader::OrderBuyTraded, &position, &GuiPosition::OnOrderBuyTraded);
-        QObject::connect(&position, &GuiPosition::PositionReqSubscribe, pQuote, &Quote::OnPositionReqSubscribe);
-        // Position <- Quote
-        QObject::connect(pQuote, &Quote::PositionQuoteReceived, &position, &GuiPosition::OnPositionQuoteReceived);
-        // Position -> Sell
-        QObject::connect(&position, &GuiPosition::UserSelectPosition, &sell, &GuiSell::OnUserSelectPosition);
-
-        auto &order = *gui_orders[i];
-        // Order <-> Trader
-        QObject::connect(pTrader, &Trader::TraderLogin, &order, &GuiOrder::OnTraderLogin);
-        QObject::connect(pTrader, &Trader::OrderReceived, &order, &GuiOrder::OnOrderReceived);
-        QObject::connect(pTrader, &Trader::OrderTraded, &order, &GuiOrder::OnOrderTraded);
-        QObject::connect(pTrader, &Trader::OrderCanceled, &order, &GuiOrder::OnOrderCanceled);
-        QObject::connect(&order, &GuiOrder::ReqCancelOrder, pTrader, &Trader::OnReqCancelOrder);
-
-        auto &order_trade = *gui_order_trades[i];
-        // OrderTrade <- Trader
-        QObject::connect(pTrader, &Trader::TraderLogin, &order_trade, &GuiOrderTrade::OnTraderLogin);
-        QObject::connect(pTrader, &Trader::OrderTraded, &order_trade, &GuiOrderTrade::OnOrderTraded);
-
-        auto &order_insert = *gui_order_inserts[i];
-        // OrderInsert <- Trader
-        QObject::connect(pTrader, &Trader::TraderLogin, &order_insert, &GuiOrderInsert::OnTraderLogin);
-        QObject::connect(pTrader, &Trader::OrderReceived, &order_insert, &GuiOrderInsert::OnOrderReceived);
-        QObject::connect(pTrader, &Trader::OrderTraded, &order_insert, &GuiOrderInsert::OnOrderTraded);
-        QObject::connect(pTrader, &Trader::OrderCanceled, &order_insert, &GuiOrderInsert::OnOrderCanceled);
+        auto &trade = *gui_trades[i];
+        // Trade <- Trader
+        QObject::connect(pTrader, &Trader::TraderLogin, &trade, &GuiTradeTab::OnTraderLogin);
+        QObject::connect(pTrader, &Trader::AccountPositionReceived, &trade, &GuiTradeTab::OnPositionReceived);
+        QObject::connect(pTrader, &Trader::OrderReceived, &trade, &GuiTradeTab::OnOrderReceived);
+        QObject::connect(pTrader, &Trader::OrderTraded, &trade, &GuiTradeTab::OnOrderTraded);
+        QObject::connect(pTrader, &Trader::OrderCanceled, &trade, &GuiTradeTab::OnOrderCanceled);
+        QObject::connect(&trade, &GuiTradeTab::PositionReqSubscribe, pQuote, &Quote::OnPositionReqSubscribe);
+        QObject::connect(&trade, &GuiTradeTab::ReqCancelOrder, pTrader, &Trader::OnReqCancelOrder);
+        // Trade <- Quote
+        QObject::connect(pQuote, &Quote::PositionQuoteReceived, &trade, &GuiTradeTab::OnPositionQuoteReceived);
+        // Trade -> Sell
+        QObject::connect(&trade, &GuiTradeTab::UserReqSellPosition, &sell, &GuiSell::OnUserReqSellPosition);
 
         auto &asset = *gui_assets[i];
         // Asset <- Trader
@@ -132,16 +165,27 @@ void GuiMain::register_bind() const
 #pragma endregion
 
 #pragma region 关联账户
-void GuiMain::OnAccountConnected(bool checked)
+void GuiMain::connect_accounts()
 {
-    accounts_connected = checked;
+    accounts_connected = !accounts_connected;
     for (size_t i = 0; i < nAccounts; i++)
     {
         auto &sell = *gui_sells[i];
-        sell.SetActivate(accounts_connected);
+        if (accounts_connected)
+            sell.Activate(accounts_connected);
+        else
+        {
+            if (sell.GetID() == 0)
+                sell.Activate(true);
+            else
+                sell.Activate(false);
+        }
     }
 
-    ui->accConnector->setText(QString(QStringLiteral("账户%1关联")).arg(checked ? QStringLiteral("已") : QStringLiteral("未")));
+    if (accounts_connected)
+        ui->accountsConnected->setText(QString(QStringLiteral("关联")));
+    else
+        ui->accountsConnected->setText(QString(QStringLiteral("账户未关联")));
 }
 
 void GuiMain::OnSellReqSyncStockCode(size_t id, const QString &stock_code) const

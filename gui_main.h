@@ -2,11 +2,11 @@
 #define GUI_MAIN_H
 
 #include <QWidget>
-#include <QTableWidget>
 
 #include "trader.h"
 #include "quote.h"
 #include "gui_sell.h"
+#include "gui_tradetab.h"
 
 using namespace HuiFu;
 
@@ -23,14 +23,19 @@ class GuiMain : public QWidget
 
 #pragma region 关联账户
 private:
-    bool accounts_connected;
+    bool accounts_connected = true;
     size_t nAccounts;
     QList<GuiSell *> gui_sells;
+    QList<GuiTradeTab *> gui_trades;
+
+    void connect_accounts();
+
+protected:
+    void keyPressEvent(QKeyEvent *) override;
 
 public slots:
     void OnQuoteError() const;
     void OnTraderError() const;
-    void OnAccountConnected(bool);
     void OnSellReqSyncStockCode(size_t, const QString &) const;
     void OnSellReqSyncStockInfo(size_t, const QString &, const QString &) const;
     void OnSellReqSyncStockPrice(size_t, double) const;

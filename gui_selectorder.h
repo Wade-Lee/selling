@@ -18,6 +18,7 @@ public:
     ~GuiSelectOrder();
 
     void SetStockCode(const QString &stock_code) const;
+    void Activate() const;
     void SetSelect(bool) const;
     bool IsSelected() const;
 

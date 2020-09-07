@@ -64,12 +64,10 @@ namespace HuiFu
         void SellPositionReceived(size_t, const QString &, long) const;
         void AccountPositionReceived(size_t, const PositionData &);
         void OrderReceived(size_t, const OrderData &) const;
-        void OrderSellReceived(size_t, const OrderData &) const;
         void OrderTraded(size_t, const TradeData &) const;
         void OrderSellTraded(size_t, const TradeData &) const;
         void OrderBuyTraded(size_t, const TradeData &) const;
         void OrderCanceled(size_t, const CancelData &) const;
-        void OrderSellCanceled(size_t, const CancelData &) const;
         void AssetReceived(size_t, const AssetData &) const;
 
 #pragma region 故障检测

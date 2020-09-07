@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>GuiTradeTab</class>
  <widget class="QTabWidget" name="GuiTradeTab">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>1000</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="focusPolicy">
@@ -19,53 +22,401 @@
   <property name="currentIndex">
    <number>0</number>
   </property>
-  <widget class="GuiPosition" name="positionTab">
+  <widget class="QWidget" name="sellablePositionTab">
    <attribute name="title">
-    <string>持仓列表</string>
+    <string>可卖持仓</string>
    </attribute>
+   <layout class="QVBoxLayout" name="verticalLayout_4">
+    <item>
+     <widget class="QTableWidget" name="sellablePositionTable">
+      <property name="styleSheet">
+       <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>35</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>35</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>证券代码</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>股票数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>可卖数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>市价</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>市值</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="GuiOrder" name="orderTab">
+  <widget class="QWidget" name="orderTab">
    <attribute name="title">
     <string>可撤委托</string>
    </attribute>
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetDefaultConstraint</enum>
+    </property>
+    <item>
+     <widget class="QTableWidget" name="orderTable">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>757</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>35</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>35</number>
+      </attribute>
+      <attribute name="verticalHeaderStretchLastSection">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>证券代码</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>价格</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>操作</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>委托时间</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="GuiOrderTrade" name="tradeTab">
+  <widget class="QWidget" name="positionTab">
+   <attribute name="title">
+    <string>持仓列表</string>
+   </attribute>
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QTableWidget" name="positionTable">
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>35</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>35</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>证券代码</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>股票数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>市价</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>市值</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="tradeTab">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <attribute name="title">
     <string>当日成交</string>
    </attribute>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QTableWidget" name="orderTradeTable">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>35</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>35</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>成交时间</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券代码</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>操作</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>成交数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>成交均价</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>成交金额</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="GuiOrderInsert" name="insertTab">
+  <widget class="QWidget" name="insertTab">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <attribute name="title">
     <string>当日委托</string>
    </attribute>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTableWidget" name="orderInsertTable">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>35</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>35</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>委托时间</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券代码</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>证券名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>操作</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>委托数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>成交数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>撤销数量</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>委托价格</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>GuiPosition</class>
-   <extends>QWidget</extends>
-   <header>gui_position.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>GuiOrder</class>
-   <extends>QWidget</extends>
-   <header>gui_order.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>GuiOrderTrade</class>
-   <extends>QWidget</extends>
-   <header>gui_order_trade.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>GuiOrderInsert</class>
-   <extends>QWidget</extends>
-   <header>gui_order_insert.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>sellablePositionTable</sender>
+   <signal>itemPressed(QTableWidgetItem*)</signal>
+   <receiver>GuiTradeTab</receiver>
+   <slot>UserSelectPosition(QTableWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>122</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>377</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>UserSelectPosition(QTableWidgetItem*)</slot>
+ </slots>
 </ui>

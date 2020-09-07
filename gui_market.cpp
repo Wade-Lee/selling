@@ -59,74 +59,9 @@ void GuiMarket::OnMarketDataReceived(const MarketData &data)
 	for (size_t i = 0; i < quote_stall_size; i++)
 	{
 		ask_prices[i]->setText(QString::number(data.ask_price[i], 'f', 2));
-		ask_quantities[i]->setText(QString::number(data.ask_qty[i]));
+		ask_quantities[i]->setText(QString::number(data.ask_qty[i] / 100));
 		bid_prices[i]->setText(QString::number(data.bid_price[i], 'f', 2));
-		bid_quantities[i]->setText(QString::number(data.bid_qty[i]));
+		bid_quantities[i]->setText(QString::number(data.bid_qty[i] / 100));
 		ui->lastPrice->setText(QString::number(data.last_price, 'f', 2));
 	}
-}
-
-void GuiMarket::UserReqUpper()
-{
-	UserSelectPrice(ui->upperBoundPrice->text().toDouble());
-}
-
-void GuiMarket::UserReqLower()
-{
-	UserSelectPrice(ui->lowerBoundPrice->text().toDouble());
-}
-
-void GuiMarket::UserReqAsk1()
-{
-	UserSelectPrice(ui->ask_p1->text().toDouble());
-}
-
-void GuiMarket::UserReqAsk2()
-{
-	UserSelectPrice(ui->ask_p2->text().toDouble());
-}
-
-void GuiMarket::UserReqAsk3()
-{
-	UserSelectPrice(ui->ask_p3->text().toDouble());
-}
-
-void GuiMarket::UserReqAsk4()
-{
-	UserSelectPrice(ui->ask_p4->text().toDouble());
-}
-
-void GuiMarket::UserReqAsk5()
-{
-	UserSelectPrice(ui->ask_p5->text().toDouble());
-}
-
-void GuiMarket::UserReqBid1()
-{
-	UserSelectPrice(ui->bid_p1->text().toDouble());
-}
-
-void GuiMarket::UserReqBid2()
-{
-	UserSelectPrice(ui->bid_p2->text().toDouble());
-}
-
-void GuiMarket::UserReqBid3()
-{
-	UserSelectPrice(ui->bid_p3->text().toDouble());
-}
-
-void GuiMarket::UserReqBid4()
-{
-	UserSelectPrice(ui->bid_p4->text().toDouble());
-}
-
-void GuiMarket::UserReqBid5()
-{
-	UserSelectPrice(ui->bid_p5->text().toDouble());
-}
-
-void GuiMarket::UserReqLast()
-{
-	UserSelectPrice(ui->lastPrice->text().toDouble());
 }

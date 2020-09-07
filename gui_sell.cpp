@@ -3,6 +3,7 @@
 
 #include <QAbstractItemView>
 #include <QInputDialog>
+#include <QKeyEvent>
 #include <QMessageBox>
 
 using namespace std;
@@ -20,16 +21,29 @@ GuiSell::GuiSell(QWidget *parent) : QWidget(parent),
 	ui->stockCode->setInputMask("999999;_");
 	init_sell_qty();
 
-	QWidget::setTabOrder(ui->stockCode, ui->sellPrice);
-	QWidget::setTabOrder(ui->sellPrice, ui->sellQty);
-	QWidget::setTabOrder(ui->sellQty, ui->sellBtn);
+	Activate(true);
 
-	activated = (id == 0);
+	ui->stockCode->installEventFilter(this);
+	ui->sellPrice->installEventFilter(this);
+	ui->sellQty->installEventFilter(this);
 }
 
 GuiSell::~GuiSell()
 {
 	delete ui;
+}
+
+void GuiSell::Activate(bool a)
+{
+	activated = a;
+	setEnabled(a);
+}
+
+void GuiSell::SetFocus()
+{
+	Activate(true);
+	ui->stockCode->setFocus();
+	ui->stockCode->selectAll();
 }
 
 #pragma region 股票代码和股票名称
@@ -38,7 +52,7 @@ void GuiSell::UserEditStockCode(QString text)
 	SellReqSyncStockCode(id, text);
 }
 
-void GuiSell::UserReqStockInfo()
+void GuiSell::req_stock_info()
 {
 	current_stock_code = ui->stockCode->text();
 
@@ -52,20 +66,23 @@ void GuiSell::UserReqStockInfo()
 	SetStockName(pQSI->ticker_name);
 	SetSellableQty();
 
+	ui->sellPrice->setFocus();
+	ui->sellPrice->selectAll();
+
 	MarketReqSubscribe(pQSI->exchange_id, current_stock_code);
 	SellReqPosition(id, current_stock_code);
 	SellReqSyncStockInfo(id, current_stock_code, pQSI->ticker_name);
 }
 
-void GuiSell::OnUserSelectPosition(const PositionData &d, double price)
+void GuiSell::OnUserReqSellPosition(const OrderReq &d)
 {
 	ui->sellPrice->setFocus();
 	ui->sellPrice->selectAll();
 
 	SetStockCode(d.stock_code);
 	SetStockName(d.stock_name);
-	SetSellPrice(price);
-	SetSellableQty(d.sellable_qty);
+	SetSellPrice(d.price);
+	SetSellableQty(d.quantity);
 
 	current_stock_code = ui->stockCode->text();
 	XTPQSI *pQSI = StockStaticInfo::GetInstance().GetQSI(current_stock_code);
@@ -83,12 +100,10 @@ void GuiSell::UserEditSellPrice(double price)
 	SellReqSyncStockPrice(id, price);
 }
 
-void GuiSell::OnUserSelectPrice(double price)
+void GuiSell::user_enter_price()
 {
-	if (activated)
-	{
-		SetSellPrice(price);
-	}
+	ui->sellQty->setFocus();
+	ui->sellQty->setCurrentIndex(0);
 }
 
 void GuiSell::SetSellPrice(double price) const
@@ -156,18 +171,18 @@ void GuiSell::OnPositionReceived(size_t id_, const QString &stock_code, long sel
 	}
 }
 
-void GuiSell::OnOrderSellReceived(size_t id_, const OrderData &d)
+void GuiSell::OnOrderReceived(size_t id_, const OrderData &d)
 {
-	if (id == id_ && current_stock_code == d.stock_code)
+	if (id == id_ && d.side == XTP_SIDE_SELL && current_stock_code == d.stock_code)
 	{
 		int sellable_qty = ui->sellableQty->text().toInt();
 		SetSellableQty(sellable_qty - d.quantity);
 	}
 }
 
-void GuiSell::OnOrderSellCanceled(size_t id_, const CancelData &d)
+void GuiSell::OnOrderCanceled(size_t id_, const CancelData &d)
 {
-	if (id == id_ && current_stock_code == d.stock_code)
+	if (id == id_ && d.side == XTP_SIDE_SELL && current_stock_code == d.stock_code)
 	{
 		int sellable_qty = ui->sellableQty->text().toInt();
 		SetSellableQty(sellable_qty + d.qty_left);
@@ -233,40 +248,49 @@ void GuiSell::SetSellQty(const QString &text) const
 	ui->sellQty->lineEdit()->setText(text);
 }
 
-void GuiSell::keyReleaseEvent(QKeyEvent *event)
+bool GuiSell::eventFilter(QObject *watched, QEvent *event)
 {
-	if (ui->sellQty->hasFocus())
+	if (event->type() == QEvent::KeyPress)
 	{
-		switch (event->key())
+		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+		if (keyEvent->key() >= Qt::Key_A && keyEvent->key() <= Qt::Key_Z)
 		{
-		case Qt::Key_Space:
-			if (!ui->sellQty->view()->isVisible())
-				ui->sellQty->showPopup();
-			break;
-		default:
-			break;
-		}
-	}
-}
+			if (keyEvent->key() == Qt::Key_Period && watched == ui->sellPrice)
+			{
+				return false;
+			}
 
-void GuiSell::keyPressEvent(QKeyEvent *event)
-{
-	if (ui->sellQty->hasFocus())
-	{
-		switch (event->key())
-		{
-		case Qt::Key_Return:
-			req_selling();
-			break;
-		default:
-			break;
+			keyEvent->ignore();
+			return true;
 		}
+		else if (keyEvent->key() == Qt::Key_Return)
+		{
+			if (watched == ui->stockCode)
+				req_stock_info();
+			else if (watched == ui->sellPrice)
+				user_enter_price();
+			else if (watched == ui->sellQty)
+				req_selling();
+			return true;
+		}
+		else if (keyEvent->key() == Qt::Key_Space)
+		{
+			if (watched == ui->sellQty)
+			{
+				if (!ui->sellQty->view()->isVisible())
+					ui->sellQty->showPopup();
+			}
+			return true;
+		}
+		return false;
 	}
+	else
+		return false;
 }
 #pragma endregion
 
 #pragma region 卖出和重置
-void GuiSell::req_selling() const
+void GuiSell::req_selling()
 {
 	double price = ui->sellPrice->value();
 	long quantity;
@@ -282,27 +306,76 @@ void GuiSell::req_selling() const
 	}
 
 	QString stock_code = ui->stockCode->text();
-	if (price > 0 &&
-		quantity > 0 &&
-		stock_code != "" &&
-		ui->stockName->text() != "")
-	{
-		QString text{QStringLiteral("是否卖出：\n")};
-		text += ui->stockName->text();
-		text += "\n";
-		text += QStringLiteral("价格：");
-		text += QString::number(price, 'f', 2);
-		text += "\n";
-		text += QStringLiteral("数量：");
-		text += QString::number(quantity);
 
-		if (QMessageBox::information(nullptr, "Req Selling", text, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+	auto pQSI = StockStaticInfo::GetInstance().GetQSI(stock_code);
+	if (!pQSI)
+	{
+		QString text{QStringLiteral("找不到股票代码：")};
+		text += stock_code;
+		QMessageBox::warning(nullptr, "Warning", text);
+		UserClear();
+		ui->stockCode->setFocus();
+		ui->stockCode->selectAll();
+		return;
+	}
+
+	if (price < pQSI->lower_limit_price)
+	{
+		QString text = stock_code;
+		text += QStringLiteral("卖出价格低于跌停价：");
+		text += QString::number(pQSI->lower_limit_price, 'f', 2);
+		QMessageBox::warning(nullptr, "Warning", text);
+		ui->sellPrice->setFocus();
+		ui->sellPrice->selectAll();
+		return;
+	}
+
+	if (price > pQSI->upper_limit_price)
+	{
+		QString text = stock_code;
+		text += QStringLiteral("卖出价格高于涨停价：");
+		text += QString::number(pQSI->upper_limit_price, 'f', 2);
+		QMessageBox::warning(nullptr, "Warning", text);
+		ui->sellPrice->setFocus();
+		ui->sellPrice->selectAll();
+		return;
+	}
+
+	if (quantity == 0)
+	{
+		QString text = stock_code;
+		text += QStringLiteral("卖出数量为0");
+		QMessageBox::warning(nullptr, "Warning", text);
+		ui->sellQty->setCurrentIndex(0);
+		return;
+	}
+
+	int sellable_qty = ui->sellableQty->text().toInt();
+	if (quantity > sellable_qty)
+	{
+		QString text = stock_code;
+		text += QStringLiteral("卖出数量高于可卖数量：");
+		text += QString::number(sellable_qty);
+		QMessageBox::warning(nullptr, "Warning", text);
+		ui->sellQty->setCurrentIndex(0);
+		return;
+	}
+
+	QString text{QStringLiteral("是否卖出：\n")};
+	text += ui->stockName->text();
+	text += "\n";
+	text += QStringLiteral("价格：");
+	text += QString::number(price, 'f', 2);
+	text += "\n";
+	text += QStringLiteral("数量：");
+	text += QString::number(quantity);
+
+	if (QMessageBox::information(nullptr, "Req Selling", text, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+	{
+		SellReqSelling(id, stock_code, price, quantity);
+		if (ui->sellBtn->hasFocus())
 		{
-			SellReqSelling(id, stock_code, price, quantity);
-			if (ui->sellBtn->hasFocus())
-			{
-				// ReqSellStock(GetID());
-			}
+			// ReqSellStock(GetID());
 		}
 	}
 }

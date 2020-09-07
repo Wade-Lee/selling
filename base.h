@@ -102,17 +102,20 @@ namespace HuiFu
     {
         StockCode stock_code;
         double last_price;
+        double bid_price;
         double pre_close_price;
         double high_price;
 
         TraderMarketData(
             const char *code,
-            const double last,
-            const double pre_close,
-            const double high) : stock_code(code),
-                                 last_price(last),
-                                 pre_close_price(pre_close),
-                                 high_price(high)
+            double last,
+            double bid,
+            double pre_close,
+            double high) : stock_code(code),
+                           last_price(last),
+                           bid_price(bid),
+                           pre_close_price(pre_close),
+                           high_price(high)
         {
             qRegisterMetaType<TraderMarketData>("TraderMarketData");
             qRegisterMetaType<TraderMarketData>("TraderMarketData&");
@@ -165,6 +168,29 @@ namespace HuiFu
         }
 
         PositionData() : stock_code(""), stock_name(""){};
+    };
+
+    struct OrderReq
+    {
+        StockCode stock_code;
+        QString stock_name;
+        int64_t quantity;
+        double price;
+
+        OrderReq(
+            const QString &code,
+            const QString &name,
+            int64_t qty,
+            double p) : stock_code(code),
+                        stock_name(name),
+                        quantity(qty),
+                        price(p)
+        {
+            qRegisterMetaType<OrderReq>("OrderReq");
+            qRegisterMetaType<OrderReq>("OrderReq&");
+        }
+
+        OrderReq() : stock_code(""), stock_name(""){};
     };
 
     struct OrderData

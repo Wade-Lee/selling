@@ -366,7 +366,7 @@ namespace HuiFu
         // 找出账户id
         size_t acc_index = get_account_index(session_id, order.order_client_id);
 
-        // 刷新Order界面显示
+        // 刷新Trade界面显示
         OrderReceived(acc_index, OrderData{
                                      order.order_xtp_id,
                                      order.ticker,
@@ -414,7 +414,7 @@ namespace HuiFu
         // 找出账户id
         size_t acc_index = get_account_index(session_id, order.order_client_id);
 
-        // 刷新Order界面显示
+        // 刷新Trade和Sell界面显示
         OrderReceived(acc_index, OrderData{
                                      order.order_xtp_id,
                                      order.ticker,
@@ -453,17 +453,6 @@ namespace HuiFu
             order.side,
             order.quantity,
             order.price};
-
-        // 刷新Position和Sell界面显示（可卖数量）
-        OrderSellReceived(acc_index, OrderData{
-                                         order.order_xtp_id,
-                                         order.ticker,
-                                         order.side,
-                                         insert_time,
-                                         order.price,
-                                         order.quantity,
-                                         order.qty_traded,
-                                         order.trade_amount});
     }
 
     void Trader::order_buy_canceled(uint64_t session_id, const XTPOrderInfo &order)
@@ -474,7 +463,7 @@ namespace HuiFu
         // 找出账户id
         size_t acc_index = get_account_index(session_id, order.order_client_id);
 
-        // 刷新Order界面显示
+        // 刷新Trade界面显示
         OrderCanceled(acc_index, CancelData{
                                      order.order_xtp_id,
                                      order.ticker,
@@ -526,7 +515,7 @@ namespace HuiFu
         // 找出账户id
         size_t acc_index = get_account_index(session_id, order.order_client_id);
 
-        // 刷新Order界面显示
+        // 刷新Trade和Sell界面显示
         OrderCanceled(acc_index, CancelData{
                                      order.order_xtp_id,
                                      order.ticker,
@@ -561,17 +550,6 @@ namespace HuiFu
                 positions.erase(stock_code);
             }
         }
-
-        // 刷新Position和Sell界面显示（可卖数量）
-        OrderSellCanceled(acc_index, CancelData{
-                                         order.order_xtp_id,
-                                         order.ticker,
-                                         order.side,
-                                         cancel_time,
-                                         order.price,
-                                         order.quantity,
-                                         order.qty_left,
-                                         order.trade_amount});
     }
 
     void Trader::order_buy_traded(uint32_t session_id, const XTPTradeReport &trade)

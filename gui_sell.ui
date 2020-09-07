@@ -79,6 +79,9 @@
      <property name="maximum">
       <double>999999.000000000000000</double>
      </property>
+     <property name="singleStep">
+      <double>0.010000000000000</double>
+     </property>
     </widget>
    </item>
    <item row="4" column="0">
@@ -148,7 +151,7 @@
    <item row="6" column="0">
     <widget class="QPushButton" name="clearBtn">
      <property name="focusPolicy">
-      <enum>Qt::ClickFocus</enum>
+      <enum>Qt::StrongFocus</enum>
      </property>
      <property name="text">
       <string>重置</string>
@@ -164,6 +167,9 @@
    </item>
    <item row="4" column="1">
     <widget class="QPushButton" name="sellableQty">
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -171,24 +177,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>stockCode</tabstop>
+  <tabstop>sellPrice</tabstop>
+  <tabstop>sellQty</tabstop>
+  <tabstop>sellBtn</tabstop>
+  <tabstop>clearBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections>
-  <connection>
-   <sender>stockCode</sender>
-   <signal>returnPressed()</signal>
-   <receiver>GuiSell</receiver>
-   <slot>UserReqStockInfo()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>121</x>
-     <y>83</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>329</x>
-     <y>137</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>stockCode</sender>
    <signal>textEdited(QString)</signal>
@@ -303,7 +300,6 @@
   </connection>
  </connections>
  <slots>
-  <slot>UserReqStockInfo()</slot>
   <slot>UserEditStockCode(QString)</slot>
   <slot>UserEditSellPrice(double)</slot>
   <slot>UserSelectSellQty(int)</slot>

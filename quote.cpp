@@ -151,6 +151,7 @@ namespace HuiFu
             PositionQuoteReceived(TraderMarketData{
                 market_data->ticker,
                 market_data->last_price,
+                market_data->bid[0],
                 market_data->pre_close_price,
                 market_data->high_price});
             need = true;

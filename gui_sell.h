@@ -4,7 +4,6 @@
 #include "base.h"
 
 #include <QWidget>
-#include <QKeyEvent>
 
 namespace Ui
 {
@@ -15,11 +14,16 @@ class GuiSell : public QWidget
 {
 	Q_OBJECT
 
+protected:
+	bool eventFilter(QObject *, QEvent *) override;
+
 #pragma region 股票代码和股票名称
+private:
+	void req_stock_info();
+
 public slots:
 	void UserEditStockCode(QString);
-	void UserReqStockInfo();
-	void OnUserSelectPosition(const HuiFu::PositionData &, double);
+	void OnUserReqSellPosition(const HuiFu::OrderReq &);
 
 signals:
 	void MarketReqSubscribe(int, const QString &) const;
@@ -31,20 +35,18 @@ public:
 	void SetStockName(const QString &text) const;
 #pragma endregion
 
-protected:
-	void keyReleaseEvent(QKeyEvent *);
-	void keyPressEvent(QKeyEvent *);
-
 #pragma region 卖出价格
 public slots:
 	void UserEditSellPrice(double);
-	void OnUserSelectPrice(double);
 
 signals:
 	void SellReqSyncStockPrice(size_t, double) const;
 
 public:
 	void SetSellPrice(double price) const;
+
+private:
+	void user_enter_price();
 #pragma endregion
 
 #pragma region 可卖股数和卖出数量
@@ -53,8 +55,8 @@ public slots:
 	void UserEditSellQty(QString);
 	void UserReqSellAllQty();
 	void OnPositionReceived(size_t, const QString &, long);
-	void OnOrderSellReceived(size_t, const HuiFu::OrderData &);
-	void OnOrderSellCanceled(size_t, const HuiFu::CancelData &);
+	void OnOrderReceived(size_t, const HuiFu::OrderData &);
+	void OnOrderCanceled(size_t, const HuiFu::CancelData &);
 
 signals:
 	void SellReqPosition(size_t, const QString &) const;
@@ -84,7 +86,7 @@ signals:
 	void SellReqSelling(size_t, const QString &, double, int64_t) const;
 
 private:
-	void req_selling() const;
+	void req_selling();
 #pragma endregion
 
 #pragma region 属性成员
@@ -101,17 +103,10 @@ public:
 	size_t GetID() const { return id; }
 	const HuiFu::StockCode &GetCurrentStockCode() const { return current_stock_code; }
 
-	void SetActivate(bool a)
-	{
-		activated = a;
-		if (!activated)
-		{
-			activated = (id == 0);
-		}
-
-		qInfo() << activated;
-	}
+	void Activate(bool a);
 	bool IsActivated() const { return activated; }
+
+	void SetFocus();
 #pragma endregion
 
 private:
