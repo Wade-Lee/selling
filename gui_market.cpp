@@ -3,8 +3,9 @@
 
 using namespace std;
 
+size_t QuoteStallSize = 5;
+
 GuiMarket::GuiMarket(QWidget *parent) : QWidget(parent),
-										quote_stall_size(5),
 										current_stock_code(""),
 										ui(new Ui::GuiMarket)
 {
@@ -56,7 +57,7 @@ void GuiMarket::OnMarketDataReceived(const MarketData &data)
 		return;
 	}
 
-	for (size_t i = 0; i < quote_stall_size; i++)
+	for (size_t i = 0; i < QuoteStallSize; i++)
 	{
 		ask_prices[i]->setText(QString::number(data.ask_price[i], 'f', 2));
 		ask_quantities[i]->setText(QString::number(data.ask_qty[i] / 100));

@@ -127,9 +127,9 @@ void GuiMain::register_bind() const
         auto &sell = *gui_sells[i];
         // Sell <-> Quote
         QObject::connect(&sell, &GuiSell::MarketReqSubscribe, pQuote, &Quote::OnMarketReqSubscribe);
+        QObject::connect(pQuote, &Quote::MarketDataReceived, &sell, &GuiSell::OnMarketDataReceived);
         // Sell <-> Trader
-        QObject::connect(&sell, &GuiSell::SellReqPosition, pTrader, &Trader::OnSellReqPosition);
-        QObject::connect(pTrader, &Trader::SellPositionReceived, &sell, &GuiSell::OnPositionReceived);
+        QObject::connect(pTrader, &Trader::AccountPositionReceived, &sell, &GuiSell::OnPositionReceived);
         QObject::connect(&sell, &GuiSell::SellReqSelling, pTrader, &Trader::OnSellReqSelling);
         QObject::connect(pTrader, &Trader::OrderReceived, &sell, &GuiSell::OnOrderReceived);
         QObject::connect(pTrader, &Trader::OrderCanceled, &sell, &GuiSell::OnOrderCanceled);
@@ -138,7 +138,6 @@ void GuiMain::register_bind() const
         QObject::connect(&sell, &GuiSell::SellReqSyncStockInfo, this, &GuiMain::OnSellReqSyncStockInfo);
         QObject::connect(&sell, &GuiSell::SellReqSyncStockPrice, this, &GuiMain::OnSellReqSyncStockPrice);
         QObject::connect(&sell, &GuiSell::SellReqSyncSellQty, this, &GuiMain::OnSellReqSyncSellQty);
-        QObject::connect(&sell, &GuiSell::SellReqSyncSellQtyText, this, &GuiMain::OnSellReqSyncSellQtyText);
 
         auto &trade = *gui_trades[i];
         // Trade <- Trader
@@ -210,11 +209,7 @@ void GuiMain::OnSellReqSyncStockInfo(size_t id, const QString &stock_code, const
         {
             if (sell->GetID() != id)
             {
-                sell->SetStockCode(stock_code);
-                sell->SetStockName(stock_name);
-                sell->SetSellableQty();
-
-                sell->SellReqPosition(sell->GetID(), stock_code);
+                sell->SyncStockInfo(stock_code, stock_name);
             }
         }
     }
@@ -234,7 +229,7 @@ void GuiMain::OnSellReqSyncStockPrice(size_t id, double price) const
     }
 }
 
-void GuiMain::OnSellReqSyncSellQty(size_t id, int index) const
+void GuiMain::OnSellReqSyncSellQty(size_t id, int64_t sell_qty, int64_t total_qty) const
 {
     if (accounts_connected)
     {
@@ -242,21 +237,7 @@ void GuiMain::OnSellReqSyncSellQty(size_t id, int index) const
         {
             if (sell->GetID() != id)
             {
-                sell->SetSellQty(index);
-            }
-        }
-    }
-}
-
-void GuiMain::OnSellReqSyncSellQtyText(size_t id, const QString &text) const
-{
-    if (accounts_connected)
-    {
-        for (auto sell : gui_sells)
-        {
-            if (sell->GetID() != id)
-            {
-                sell->SetSellQty(text);
+                sell->SetSellQty(sell_qty, total_qty);
             }
         }
     }

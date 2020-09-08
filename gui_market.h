@@ -29,7 +29,6 @@ public:
 private:
 	Ui::GuiMarket *ui;
 
-	size_t quote_stall_size;
 	StockCode current_stock_code;
 	std::vector<QLabel *> ask_prices;
 	std::vector<QLabel *> ask_quantities;

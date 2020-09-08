@@ -65,14 +65,6 @@ namespace HuiFu
 #pragma endregion
 
 #pragma region 查询持仓 / 报单 / 资金
-    void Trader::OnSellReqPosition(size_t id, const QString &stock_code) const
-    {
-        if (mAsset[id].positions.find(stock_code) != mAsset[id].positions.end())
-        {
-            SellPositionReceived(id, stock_code, mAsset[id].positions.at(stock_code).sellable_qty);
-        }
-    }
-
     void Trader::ReqAccountInfo(size_t acc_index)
     {
         // 1.查询持仓

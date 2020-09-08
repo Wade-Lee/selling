@@ -53,7 +53,6 @@ namespace HuiFu
         size_t get_account_index(uint64_t, uint32_t) const;
 
     public slots:
-        void OnSellReqPosition(size_t, const QString &) const;
         void OnPositionQuoteReceived(const TraderMarketData &);
         void OnSellReqSelling(size_t, const QString &, double, int64_t);
         void OnReqCancelOrder(size_t, uint64_t) const;
@@ -61,7 +60,6 @@ namespace HuiFu
     signals:
         void TraderError() const;
         void TraderLogin(size_t) const;
-        void SellPositionReceived(size_t, const QString &, long) const;
         void AccountPositionReceived(size_t, const PositionData &);
         void OrderReceived(size_t, const OrderData &) const;
         void OrderTraded(size_t, const TradeData &) const;

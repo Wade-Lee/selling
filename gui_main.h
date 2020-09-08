@@ -39,8 +39,7 @@ public slots:
     void OnSellReqSyncStockCode(size_t, const QString &) const;
     void OnSellReqSyncStockInfo(size_t, const QString &, const QString &) const;
     void OnSellReqSyncStockPrice(size_t, double) const;
-    void OnSellReqSyncSellQty(size_t, int) const;
-    void OnSellReqSyncSellQtyText(size_t, const QString &) const;
+    void OnSellReqSyncSellQty(size_t, int64_t, int64_t) const;
 #pragma endregion
 
 #pragma region 关联事件
