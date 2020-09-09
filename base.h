@@ -69,6 +69,7 @@ namespace HuiFu
     struct MarketData
     {
         StockCode stock_code;
+        double pre_close_price;
         double bid_price[5]; //5档申买价
         double ask_price[5]; //5档申卖价
         int64_t bid_qty[5];  //5档申买量
@@ -77,11 +78,12 @@ namespace HuiFu
 
         MarketData( //传入的数组必须含有5个以上的元素
             const char *code,
-            const double bid_p[],
-            const double ask_p[],
-            const int64_t bid_q[],
-            const int64_t ask_q[],
-            double price) : stock_code(code), last_price(price)
+            double pre_close,
+            double bid_p[],
+            double ask_p[],
+            int64_t bid_q[],
+            int64_t ask_q[],
+            double last) : stock_code(code), pre_close_price(pre_close), last_price(last)
         {
             qRegisterMetaType<MarketData>("MarketData");
             qRegisterMetaType<MarketData>("MarketData&");

@@ -30,10 +30,13 @@ private:
 	Ui::GuiMarket *ui;
 
 	StockCode current_stock_code;
+	double pre_close_price = 0.0;
 	std::vector<QLabel *> ask_prices;
 	std::vector<QLabel *> ask_quantities;
 	std::vector<QLabel *> bid_prices;
 	std::vector<QLabel *> bid_quantities;
+
+	void set_label_style_sheet(QLabel *, double) const;
 };
 
 #endif // GUI_MARKET_H

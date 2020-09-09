@@ -185,14 +185,12 @@ void GuiSell::req_stock_info()
 	if (mPositions.find(current_stock_code) != mPositions.end())
 		SetSellableQty(mPositions.at(current_stock_code).quantity);
 	else
-	{
-		MarketReqSubscribe(pQSI->exchange_id, current_stock_code);
 		SetSellableQty();
-	}
 
 	ui->sellPrice->setFocus();
 	ui->sellPrice->selectAll();
 
+	MarketReqSubscribe(pQSI->exchange_id, current_stock_code);
 	SellReqSyncStockInfo(id, current_stock_code, pQSI->ticker_name);
 }
 
@@ -207,6 +205,7 @@ void GuiSell::OnUserReqSellPosition(const OrderReq &d)
 	SetSellableQty(d.quantity);
 
 	XTPQSI *pQSI = StockStaticInfo::GetInstance().GetQSI(current_stock_code);
+	MarketReqSubscribe(pQSI->exchange_id, current_stock_code);
 	SellReqSyncStockInfo(id, current_stock_code, d.stock_name);
 }
 

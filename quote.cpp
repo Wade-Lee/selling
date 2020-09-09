@@ -138,6 +138,7 @@ namespace HuiFu
         {
             MarketDataReceived(MarketData{
                 market_data->ticker,
+                market_data->pre_close_price,
                 market_data->bid,
                 market_data->ask,
                 market_data->bid_qty,
