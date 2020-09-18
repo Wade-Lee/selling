@@ -139,6 +139,8 @@ void GuiMain::register_bind() const
 {
     qRegisterMetaType<size_t>("size_t");
     qRegisterMetaType<size_t>("size_t&");
+    qRegisterMetaType<int32_t>("int32_t");
+    qRegisterMetaType<int32_t>("int32_t&");
     qRegisterMetaType<int64_t>("int64_t");
     qRegisterMetaType<int64_t>("int64_t&");
     qRegisterMetaType<uint64_t>("uint64_t");

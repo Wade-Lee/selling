@@ -198,16 +198,13 @@ namespace HuiFu
     {
         StockCode stock_code;
         QString stock_name;
-        int64_t quantity;
         double price;
 
         OrderReq(
             const QString &code,
             const QString &name,
-            int64_t qty,
             double p) : stock_code(code),
                         stock_name(name),
-                        quantity(qty),
                         price(p)
         {
             qRegisterMetaType<OrderReq>("OrderReq");

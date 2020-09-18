@@ -206,10 +206,13 @@ void GuiSell::OnMarketDataReceived(const MarketData &d)
 
 void GuiSell::OnUserReqSellPosition(const OrderReq &d)
 {
-	SetStockCode(d.stock_code);
-	SetStockName(d.stock_name);
-	SetSellPrice(d.price);
-	SetSellableQty(d.quantity);
+	if (mPositions.find(d.stock_code) != mPositions.end())
+	{
+		SetStockCode(d.stock_code);
+		SetStockName(d.stock_name);
+		SetSellPrice(d.price);
+		SetSellableQty(mPositions.at(d.stock_code).sellable_qty);
+	}
 
 	ui->sellPrice->setFocus();
 	ui->sellPrice->selectAll();
@@ -329,10 +332,11 @@ void GuiSell::UserSelectSellQty(int index)
 
 void GuiSell::OnOrderReceived(size_t id_, const OrderData &d)
 {
-	if (id == id_ && mPositions.find(d.stock_code) != mPositions.end() && current_stock_code == d.stock_code)
+	if (id == id_ && mPositions.find(d.stock_code) != mPositions.end())
 	{
 		mPositions.at(d.stock_code).sellable_qty -= d.quantity;
-		SetSellableQty(mPositions.at(d.stock_code).sellable_qty);
+		if (current_stock_code == d.stock_code)
+			SetSellableQty(mPositions.at(d.stock_code).sellable_qty);
 	}
 }
 
@@ -347,10 +351,11 @@ void GuiSell::OnOrderTraded(size_t id_, const TradeData &d)
 
 void GuiSell::OnOrderCanceled(size_t id_, const CancelData &d)
 {
-	if (id == id_ && mPositions.find(d.stock_code) != mPositions.end() && current_stock_code == d.stock_code)
+	if (id == id_ && mPositions.find(d.stock_code) != mPositions.end())
 	{
 		mPositions.at(d.stock_code).sellable_qty += d.qty_left;
-		SetSellableQty(mPositions.at(d.stock_code).sellable_qty);
+		if (current_stock_code == d.stock_code)
+			SetSellableQty(mPositions.at(d.stock_code).sellable_qty);
 	}
 }
 

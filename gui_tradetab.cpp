@@ -509,9 +509,8 @@ void GuiTradeTab::UserSelectPosition(QTableWidgetItem *item)
     int row = item->row();
     auto stock_code = ui->sellablePositionTable->item(row, 1)->text();
     auto stock_name = ui->sellablePositionTable->item(row, 2)->text();
-    int quantity = ui->sellablePositionTable->item(row, 4)->text().toInt();
     double price = ui->sellablePositionTable->item(row, 5)->data(Qt::UserRole).value<double>();
-    UserReqSellPosition(OrderReq{stock_code, stock_name, quantity, price});
+    UserReqSellPosition(OrderReq{stock_code, stock_name, price});
 }
 
 void GuiTradeTab::UserSelectPosition(size_t index) const
@@ -523,9 +522,8 @@ void GuiTradeTab::UserSelectPosition(size_t index) const
             int r = ui->sellablePositionTable->row(val.second);
             auto stock_code = ui->sellablePositionTable->item(r, 1)->text();
             auto stock_name = ui->sellablePositionTable->item(r, 2)->text();
-            int quantity = ui->sellablePositionTable->item(r, 4)->text().toInt();
             double price = ui->sellablePositionTable->item(r, 5)->data(Qt::UserRole).value<double>();
-            UserReqSellPosition(OrderReq{stock_code, stock_name, quantity, price});
+            UserReqSellPosition(OrderReq{stock_code, stock_name, price});
             return;
         }
     }
