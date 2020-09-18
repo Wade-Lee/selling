@@ -39,6 +39,8 @@ void GuiMarket::OnSubscribed(const QString &stock_code, bool subbed)
 			ui->lowerBoundPrice->setText(QString::number(pQSI->lower_limit_price, 'f', 2));
 			ui->upperBoundPrice->setText(QString::number(pQSI->upper_limit_price, 'f', 2));
 		}
+		if (mQuotes.find(stock_code) != mQuotes.end())
+			update_quotes(mQuotes.at(stock_code));
 	}
 	else
 	{
@@ -52,12 +54,32 @@ void GuiMarket::OnSubscribed(const QString &stock_code, bool subbed)
 
 void GuiMarket::OnMarketDataReceived(const MarketData &d)
 {
+	if (mQuotes.find(d.stock_code) == mQuotes.end())
+		mQuotes[d.stock_code] = d;
+	else
+		mQuotes.at(d.stock_code) = d;
+
 	if (current_stock_code != d.stock_code)
 	{
 		return;
 	}
 
 	pre_close_price = d.pre_close_price;
+	update_quotes(d);
+}
+
+void GuiMarket::set_label_style_sheet(QLabel *pLabel, double price) const
+{
+	if (fabs(price - pre_close_price) < numeric_limits<double>::epsilon())
+		pLabel->setStyleSheet("color: gray;");
+	else if (price > pre_close_price)
+		pLabel->setStyleSheet("color: red;");
+	else
+		pLabel->setStyleSheet("color: blue;");
+}
+
+void GuiMarket::update_quotes(const MarketData &d)
+{
 	ui->lastPrice->setText(QString::number(d.last_price, 'f', 2));
 	set_label_style_sheet(ui->lastPrice, d.last_price);
 	double pct = (d.last_price - d.pre_close_price) / d.pre_close_price;
@@ -67,7 +89,7 @@ void GuiMarket::OnMarketDataReceived(const MarketData &d)
 	else if (pct > 0)
 		ui->lastChangePct->setStyleSheet("color: red;");
 	else
-		ui->lastChangePct->setStyleSheet("color: green;");
+		ui->lastChangePct->setStyleSheet("color: blue;");
 
 	for (size_t i = 0; i < QuoteStallSize; i++)
 	{
@@ -78,14 +100,4 @@ void GuiMarket::OnMarketDataReceived(const MarketData &d)
 		set_label_style_sheet(bid_prices[i], d.bid_price[i]);
 		bid_quantities[i]->setText(QString::number(d.bid_qty[i] / 100));
 	}
-}
-
-void GuiMarket::set_label_style_sheet(QLabel *pLabel, double price) const
-{
-	if (fabs(price - pre_close_price) < numeric_limits<double>::epsilon())
-		pLabel->setStyleSheet("color: gray;");
-	else if (price > pre_close_price)
-		pLabel->setStyleSheet("color: red;");
-	else
-		pLabel->setStyleSheet("color: green;");
 }

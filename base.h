@@ -66,6 +66,28 @@ namespace HuiFu
         std::unordered_map<StockCode, XTPQSI> mapQSI;
     };
 
+    struct StockSellInfo
+    {
+        StockCode stock_code;
+        QString stock_name;
+        double price;
+        int64_t sell_qty;
+        int64_t total_qty;
+
+        StockSellInfo(
+            const StockCode &code,
+            const QString &name,
+            double p,
+            int64_t sell,
+            int64_t total) : stock_code(code), stock_name(name), price(p), sell_qty(sell), total_qty(total)
+        {
+            qRegisterMetaType<StockSellInfo>("StockSellInfo");
+            qRegisterMetaType<StockSellInfo>("StockSellInfo&");
+        }
+
+        StockSellInfo() : stock_code(""), stock_name(""){};
+    };
+
     struct MarketData
     {
         StockCode stock_code;

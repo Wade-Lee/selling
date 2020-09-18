@@ -133,7 +133,6 @@ namespace HuiFu
         int32_t ask1_count,
         int32_t max_ask1_count)
     {
-        bool need = false;
         if (mMarketStock == market_data->ticker)
         {
             MarketDataReceived(MarketData{
@@ -144,7 +143,6 @@ namespace HuiFu
                 market_data->bid_qty,
                 market_data->ask_qty,
                 market_data->last_price});
-            need = true;
         }
 
         if (mTraderStocks.find(market_data->ticker) != mTraderStocks.end())
@@ -155,45 +153,6 @@ namespace HuiFu
                 market_data->bid[0],
                 market_data->pre_close_price,
                 market_data->high_price});
-            need = true;
-        }
-
-        if (!need)
-        {
-            unsubscribe(market_data->exchange_id, market_data->ticker);
-        }
-    }
-#pragma endregion
-
-#pragma region 退订快照
-    void Quote::OnPositionReqUnSubscribe(const QString &stock_code)
-    {
-        mTraderStocks.erase(stock_code);
-    }
-
-    bool Quote::unsubscribe(XTP_EXCHANGE_TYPE exchange_id, const StockCode &stock_code)
-    {
-        strcpy(pStocks[0], stock_code.toStdString().c_str());
-        if (pQuoteApi->UnSubscribeMarketData(pStocks, 1, exchange_id) == 0)
-        {
-            return true;
-        }
-        else
-        {
-            onerror(QString("1% 2%").arg(QStringLiteral("退订股票")).arg(stock_code));
-            return false;
-        }
-    }
-
-    void Quote::OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last)
-    {
-        if (error_info == nullptr || error_info->error_id == 0)
-        {
-            qCDebug(XTPQuote) << QStringLiteral("退订股票成功：") << ticker->ticker;
-        }
-        else
-        {
-            qCDebug(XTPQuote) << QStringLiteral("退订股票返回错误:") << ticker->ticker << error_info->error_id << error_info->error_msg;
         }
     }
 #pragma endregion

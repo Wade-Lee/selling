@@ -4,6 +4,7 @@
 #include "gui_selectorder.h"
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QSpinBox>
 
 using namespace std;
 using namespace HuiFu;
@@ -49,6 +50,26 @@ void GuiTradeTab::SetFocus(int index)
         break;
     default:
         break;
+    }
+}
+
+set<StockCode> GuiTradeTab::GetSellPositions() const
+{
+    set<StockCode> positions;
+    for (auto &val : mSellPositions)
+    {
+        positions.insert(val.first);
+    }
+    return positions;
+}
+
+void GuiTradeTab::SetSellPositionIndex(StockCode stock_code, size_t index)
+{
+    if (mSellPositions.find(stock_code) != mSellPositions.end())
+    {
+        int i = ui->sellablePositionTable->row(mSellPositions.at(stock_code));
+        ui->sellablePositionTable->item(i, 0)->setText(QString::number(index));
+        ui->sellablePositionTable->sortItems(0);
     }
 }
 
@@ -115,6 +136,27 @@ bool GuiTradeTab::eventFilter(QObject *watched, QEvent *event)
             }
             return true;
         }
+        return false;
+    }
+    else if (event->type() == QEvent::FocusOut)
+    {
+        focused = false;
+        if (watched == ui->sellablePositionTable)
+            ui->sellablePositionTable->setCurrentItem(nullptr);
+        else if (watched == ui->orderTable)
+            ui->orderTable->setCurrentItem(nullptr);
+        else if (watched == ui->positionTable)
+            ui->positionTable->setCurrentItem(nullptr);
+        else if (watched == ui->orderTradeTable)
+            ui->orderTradeTable->setCurrentItem(nullptr);
+        else if (watched == ui->orderInsertTable)
+            ui->orderInsertTable->setCurrentItem(nullptr);
+
+        return false;
+    }
+    else if (event->type() == QEvent::FocusIn)
+    {
+        focused = true;
         return false;
     }
     else
@@ -187,12 +229,13 @@ void GuiTradeTab::insert_position(const StockCode &stock_code, const QString &st
     int rows = ui->sellablePositionTable->rowCount();
 
     ui->sellablePositionTable->setRowCount(rows + 1);
-    ui->sellablePositionTable->setItem(rows, 0, new QTableWidgetItem(stock_code));
-    ui->sellablePositionTable->setItem(rows, 1, new QTableWidgetItem(stock_name));
-    ui->sellablePositionTable->setItem(rows, 2, new QTableWidgetItem(QString::number(total_qty)));
-    ui->sellablePositionTable->setItem(rows, 3, new QTableWidgetItem(QString::number(sellable_qty)));
-    ui->sellablePositionTable->setItem(rows, 4, new QTableWidgetItem(QString::number(price, 'f', 2)));
-    ui->sellablePositionTable->setItem(rows, 5, new QTableWidgetItem(QString::number(price * total_qty, 'f', 2)));
+    ui->sellablePositionTable->setItem(rows, 0, new GuiIndexItem(QString::number(0)));
+    ui->sellablePositionTable->setItem(rows, 1, new QTableWidgetItem(stock_code));
+    ui->sellablePositionTable->setItem(rows, 2, new QTableWidgetItem(stock_name));
+    ui->sellablePositionTable->setItem(rows, 3, new QTableWidgetItem(QString::number(total_qty)));
+    ui->sellablePositionTable->setItem(rows, 4, new QTableWidgetItem(QString::number(sellable_qty)));
+    ui->sellablePositionTable->setItem(rows, 5, new QTableWidgetItem(QString::number(price, 'f', 2)));
+    ui->sellablePositionTable->setItem(rows, 6, new QTableWidgetItem(QString::number(price * total_qty, 'f', 2)));
 
     mSellPositions[stock_code] = ui->sellablePositionTable->item(rows, 0);
 }
@@ -225,10 +268,10 @@ void GuiTradeTab::OnPositionQuoteReceived(const TraderMarketData &d)
     if (mSellPositions.find(d.stock_code) != mSellPositions.end())
     {
         int i = ui->sellablePositionTable->row(mSellPositions.at(d.stock_code));
-        ui->sellablePositionTable->item(i, 4)->setText(QString::number(d.last_price, 'f', 2));
-        ui->sellablePositionTable->item(i, 4)->setData(Qt::UserRole, QVariant{d.bid_price});
-        int total_qty = ui->sellablePositionTable->item(i, 2)->text().toInt();
-        ui->sellablePositionTable->item(i, 5)->setText(QString::number(d.last_price * total_qty, 'f', 2));
+        ui->sellablePositionTable->item(i, 5)->setText(QString::number(d.last_price, 'f', 2));
+        ui->sellablePositionTable->item(i, 5)->setData(Qt::UserRole, QVariant{d.bid_price});
+        int total_qty = ui->sellablePositionTable->item(i, 3)->text().toInt();
+        ui->sellablePositionTable->item(i, 6)->setText(QString::number(d.last_price * total_qty, 'f', 2));
     }
 }
 
@@ -245,12 +288,13 @@ void GuiTradeTab::OnOrderReceived(size_t id_, const OrderData &d)
         if (mSellPositions.find(d.stock_code) != mSellPositions.end())
         {
             int i = ui->sellablePositionTable->row(mSellPositions.at(d.stock_code));
-            int sellable_qty = ui->sellablePositionTable->item(i, 3)->text().toInt();
-            ui->sellablePositionTable->item(i, 3)->setText(QString::number(sellable_qty - d.quantity));
+            int sellable_qty = ui->sellablePositionTable->item(i, 4)->text().toInt();
+            ui->sellablePositionTable->item(i, 4)->setText(QString::number(sellable_qty - d.quantity));
         }
     }
 
     // 可撤委托
+    ui->orderTable->setSortingEnabled(false);
     int rows = ui->orderTable->rowCount();
     ui->orderTable->setRowCount(rows + 1);
     GuiSelectOrder *selOrder = new GuiSelectOrder();
@@ -267,8 +311,11 @@ void GuiTradeTab::OnOrderReceived(size_t id_, const OrderData &d)
     ui->orderTable->setItem(rows, 4, new QTableWidgetItem(d.side == XTP_SIDE_BUY ? QStringLiteral("买入") : QStringLiteral("卖出")));
     ui->orderTable->setItem(rows, 5, new QTableWidgetItem(d.insert_time));
     mOrders[d.order_xtp_id] = ui->orderTable->item(rows, 1);
+    ui->orderTable->setSortingEnabled(true);
+    ui->orderTable->sortItems(5, Qt::DescendingOrder);
 
     // 当日委托
+    ui->orderInsertTable->setSortingEnabled(false);
     rows = ui->orderInsertTable->rowCount();
     ui->orderInsertTable->setRowCount(rows + 1);
     ui->orderInsertTable->setItem(rows, 0, new QTableWidgetItem(d.insert_time));
@@ -279,7 +326,9 @@ void GuiTradeTab::OnOrderReceived(size_t id_, const OrderData &d)
     ui->orderInsertTable->setItem(rows, 5, new QTableWidgetItem(QString::number(0)));
     ui->orderInsertTable->setItem(rows, 6, new QTableWidgetItem(QString::number(0)));
     ui->orderInsertTable->setItem(rows, 7, new QTableWidgetItem(QString::number(d.price, 'f', 2)));
-    mInsertOrders[d.order_xtp_id] = rows;
+    mInsertOrders[d.order_xtp_id] = ui->orderInsertTable->item(rows, 0);
+    ui->orderInsertTable->setSortingEnabled(true);
+    ui->orderInsertTable->sortItems(0, Qt::DescendingOrder);
 }
 
 void GuiTradeTab::add_buy_position(const HuiFu::TradeData &d)
@@ -317,7 +366,7 @@ void GuiTradeTab::sub_sell_position(const HuiFu::TradeData &d, bool is_selling_p
         if (it != mSellPositions.end())
         {
             int i = ui->sellablePositionTable->row(it->second);
-            int total_qty = ui->sellablePositionTable->item(i, 2)->text().toInt();
+            int total_qty = ui->sellablePositionTable->item(i, 3)->text().toInt();
             total_qty -= d.quantity;
             if (total_qty == 0)
             {
@@ -326,9 +375,9 @@ void GuiTradeTab::sub_sell_position(const HuiFu::TradeData &d, bool is_selling_p
                 return;
             }
 
-            ui->sellablePositionTable->item(i, 2)->setText(QString::number(total_qty));
-            ui->sellablePositionTable->item(i, 4)->setText(QString::number(d.price, 'f', 2));
-            ui->sellablePositionTable->item(i, 5)->setText(QString::number(d.price * total_qty, 'f', 2));
+            ui->sellablePositionTable->item(i, 3)->setText(QString::number(total_qty));
+            ui->sellablePositionTable->item(i, 5)->setText(QString::number(d.price, 'f', 2));
+            ui->sellablePositionTable->item(i, 6)->setText(QString::number(d.price * total_qty, 'f', 2));
         }
     }
     else
@@ -385,6 +434,7 @@ void GuiTradeTab::OnOrderTraded(size_t id_, const TradeData &d)
     }
 
     // 当日成交
+    ui->orderTradeTable->setSortingEnabled(false);
     int rows = ui->orderTradeTable->rowCount();
     ui->orderTradeTable->setRowCount(rows + 1);
     ui->orderTradeTable->setItem(rows, 0, new QTableWidgetItem(d.trade_time));
@@ -398,14 +448,16 @@ void GuiTradeTab::OnOrderTraded(size_t id_, const TradeData &d)
     ui->orderTradeTable->setItem(rows, 4, new QTableWidgetItem(QString::number(d.quantity)));
     ui->orderTradeTable->setItem(rows, 5, new QTableWidgetItem(QString::number(d.price, 'f', 2)));
     ui->orderTradeTable->setItem(rows, 6, new QTableWidgetItem(QString::number(d.trade_amount, 'f', 2)));
+    ui->orderTradeTable->setSortingEnabled(true);
+    ui->orderTradeTable->sortItems(0, Qt::DescendingOrder);
 
     // 当日委托
     if (mInsertOrders.find(d.order_xtp_id) != mInsertOrders.end())
     {
-        int row = mInsertOrders.at(d.order_xtp_id);
-        int qty = ui->orderInsertTable->item(row, 5)->text().toInt();
+        int i = ui->orderInsertTable->row(mInsertOrders.at(d.order_xtp_id));
+        int qty = ui->orderInsertTable->item(i, 5)->text().toInt();
         qty += d.quantity;
-        ui->orderInsertTable->item(row, 5)->setText(QString::number(qty));
+        ui->orderInsertTable->item(i, 5)->setText(QString::number(qty));
     }
 }
 
@@ -422,8 +474,8 @@ void GuiTradeTab::OnOrderCanceled(size_t id_, const CancelData &d)
         if (mSellPositions.find(d.stock_code) != mSellPositions.end())
         {
             int i = ui->sellablePositionTable->row(mSellPositions.at(d.stock_code));
-            int sellable_qty = ui->sellablePositionTable->item(i, 3)->text().toInt();
-            ui->sellablePositionTable->item(i, 3)->setText(QString::number(sellable_qty + d.qty_left));
+            int sellable_qty = ui->sellablePositionTable->item(i, 4)->text().toInt();
+            ui->sellablePositionTable->item(i, 4)->setText(QString::number(sellable_qty + d.qty_left));
         }
     }
 
@@ -445,21 +497,54 @@ void GuiTradeTab::OnOrderCanceled(size_t id_, const CancelData &d)
     // 当日委托
     if (mInsertOrders.find(d.order_xtp_id) != mInsertOrders.end())
     {
-        int row = mInsertOrders.at(d.order_xtp_id);
-        int qty = ui->orderInsertTable->item(row, 6)->text().toInt();
+        int i = ui->orderInsertTable->row(mInsertOrders.at(d.order_xtp_id));
+        int qty = ui->orderInsertTable->item(i, 6)->text().toInt();
         qty += d.qty_left;
-        ui->orderInsertTable->item(row, 6)->setText(QString::number(qty));
+        ui->orderInsertTable->item(i, 6)->setText(QString::number(qty));
     }
 }
 
 void GuiTradeTab::UserSelectPosition(QTableWidgetItem *item)
 {
     int row = item->row();
-    auto stock_code = ui->sellablePositionTable->item(row, 0)->text();
-    auto stock_name = ui->sellablePositionTable->item(row, 1)->text();
-    int quantity = ui->sellablePositionTable->item(row, 3)->text().toInt();
-    double price = ui->sellablePositionTable->item(row, 4)->data(Qt::UserRole).value<double>();
+    auto stock_code = ui->sellablePositionTable->item(row, 1)->text();
+    auto stock_name = ui->sellablePositionTable->item(row, 2)->text();
+    int quantity = ui->sellablePositionTable->item(row, 4)->text().toInt();
+    double price = ui->sellablePositionTable->item(row, 5)->data(Qt::UserRole).value<double>();
     UserReqSellPosition(OrderReq{stock_code, stock_name, quantity, price});
+}
+
+void GuiTradeTab::UserSelectPosition(size_t index) const
+{
+    for (auto &val : mSellPositions)
+    {
+        if (val.second->text().toInt() == index)
+        {
+            int r = ui->sellablePositionTable->row(val.second);
+            auto stock_code = ui->sellablePositionTable->item(r, 1)->text();
+            auto stock_name = ui->sellablePositionTable->item(r, 2)->text();
+            int quantity = ui->sellablePositionTable->item(r, 4)->text().toInt();
+            double price = ui->sellablePositionTable->item(r, 5)->data(Qt::UserRole).value<double>();
+            UserReqSellPosition(OrderReq{stock_code, stock_name, quantity, price});
+            return;
+        }
+    }
+}
+
+void GuiTradeTab::UserChooseOrder(bool ascending) const
+{
+    if (ascending)
+    {
+        ui->orderTable->sortItems(5, Qt::AscendingOrder);
+        ui->orderTradeTable->sortItems(0, Qt::AscendingOrder);
+        ui->orderInsertTable->sortItems(0, Qt::AscendingOrder);
+    }
+    else
+    {
+        ui->orderTable->sortItems(5, Qt::DescendingOrder);
+        ui->orderTradeTable->sortItems(0, Qt::DescendingOrder);
+        ui->orderInsertTable->sortItems(0, Qt::DescendingOrder);
+    }
 }
 
 void GuiTradeTab::req_cancel_orders() const

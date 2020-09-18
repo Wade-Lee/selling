@@ -46,6 +46,7 @@ namespace HuiFu
     private:
         XTP::API::TraderApi *pTraderApi;
         bool is_start_late = false;
+        size_t start_late_count = 0;
 
         size_t nAccounts;
         std::vector<uint64_t> mSessionIDs;
@@ -61,11 +62,14 @@ namespace HuiFu
         void TraderError() const;
         void TraderLogin(size_t) const;
         void AccountPositionReceived(size_t, const PositionData &);
+        void AccountPositionFinished();
         void OrderReceived(size_t, const OrderData &) const;
         void OrderTraded(size_t, const TradeData &) const;
         void OrderSellTraded(size_t, const TradeData &) const;
         void OrderBuyTraded(size_t, const TradeData &) const;
         void OrderCanceled(size_t, const CancelData &) const;
+        void OrderError(size_t, const QString &, const QString &, int32_t) const;
+        void OrderRefused(size_t, const QString &) const;
         void AssetReceived(size_t, const AssetData &) const;
 
 #pragma region 故障检测

@@ -4,6 +4,7 @@
 #include <vector>
 #include <QWidget>
 #include <QLabel>
+#include <unordered_map>
 
 #include "base.h"
 
@@ -28,6 +29,7 @@ public:
 
 private:
 	Ui::GuiMarket *ui;
+	std::unordered_map<StockCode, MarketData> mQuotes;
 
 	StockCode current_stock_code;
 	double pre_close_price = 0.0;
@@ -37,6 +39,7 @@ private:
 	std::vector<QLabel *> bid_quantities;
 
 	void set_label_style_sheet(QLabel *, double) const;
+	void update_quotes(const MarketData &);
 };
 
 #endif // GUI_MARKET_H

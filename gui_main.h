@@ -25,10 +25,12 @@ class GuiMain : public QWidget
 private:
     bool accounts_connected = true;
     size_t nAccounts;
+    size_t nFinishedPositions = 0;
     QList<GuiSell *> gui_sells;
     QList<GuiTradeTab *> gui_trades;
 
     void connect_accounts();
+    void user_select_position_by_key(size_t) const;
 
 protected:
     void keyPressEvent(QKeyEvent *) override;
@@ -37,9 +39,13 @@ public slots:
     void OnQuoteError() const;
     void OnTraderError() const;
     void OnSellReqSyncStockCode(size_t, const QString &) const;
-    void OnSellReqSyncStockInfo(size_t, const QString &, const QString &) const;
     void OnSellReqSyncStockPrice(size_t, double) const;
-    void OnSellReqSyncSellQty(size_t, int64_t, int64_t) const;
+    void OnSellReqSyncStockInfo(size_t, const StockSellInfo &) const;
+    void OnSellReqSelling(size_t, const QString &, const QString &, double, int64_t) const;
+    void OnAccountPositionFinished();
+
+signals:
+    void SellReqSelling(size_t, const QString &, double, int64_t) const;
 #pragma endregion
 
 #pragma region 关联事件

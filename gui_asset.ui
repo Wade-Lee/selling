@@ -3,7 +3,7 @@
  <class>GuiAsset</class>
  <widget class="QWidget" name="GuiAsset">
   <property name="enabled">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <property name="geometry">
    <rect>
@@ -25,6 +25,9 @@
   <layout class="QFormLayout" name="formLayout_2">
    <item row="0" column="0">
     <widget class="QLabel" name="totalAssetName">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>总资产</string>
      </property>

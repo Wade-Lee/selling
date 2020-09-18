@@ -58,6 +58,11 @@
       </attribute>
       <column>
        <property name="text">
+        <string>序号</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
         <string>证券代码</string>
        </property>
       </column>
@@ -175,7 +180,7 @@
     <item>
      <widget class="QTableWidget" name="positionTable">
       <property name="focusPolicy">
-       <enum>Qt::TabFocus</enum>
+       <enum>Qt::StrongFocus</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
@@ -244,7 +249,7 @@
        <bool>true</bool>
       </property>
       <property name="focusPolicy">
-       <enum>Qt::TabFocus</enum>
+       <enum>Qt::StrongFocus</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
@@ -323,7 +328,7 @@
        <bool>true</bool>
       </property>
       <property name="focusPolicy">
-       <enum>Qt::TabFocus</enum>
+       <enum>Qt::StrongFocus</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>

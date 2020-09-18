@@ -7,6 +7,7 @@
 
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <algorithm>
 
 using namespace std;
 
@@ -67,16 +68,22 @@ void GuiMain::keyPressEvent(QKeyEvent *event)
             gui_sells[1]->SetFocus();
         break;
     case Qt::Key_D:
+        if (gui_trades.size() > 0)
+            gui_trades[1]->setCurrentIndex(0);
         gui_trades[0]->SetFocus(0);
         break;
     case Qt::Key_F:
+        gui_trades[0]->setCurrentIndex(0);
         if (gui_trades.size() > 0)
             gui_trades[1]->SetFocus(0);
         break;
     case Qt::Key_S:
+        if (gui_trades.size() > 0)
+            gui_trades[1]->setCurrentIndex(1);
         gui_trades[0]->SetFocus(1);
         break;
     case Qt::Key_G:
+        gui_trades[0]->setCurrentIndex(1);
         if (gui_trades.size() > 0)
             gui_trades[1]->SetFocus(1);
         break;
@@ -91,6 +98,35 @@ void GuiMain::keyPressEvent(QKeyEvent *event)
     case Qt::Key_R:
         for (size_t i = 0; i < gui_trades.size(); i++)
             gui_trades[i]->setCurrentIndex(4);
+        break;
+    case Qt::Key_J:
+        user_select_position_by_key(1);
+        break;
+    case Qt::Key_K:
+        user_select_position_by_key(2);
+        break;
+    case Qt::Key_L:
+        user_select_position_by_key(3);
+        break;
+    case Qt::Key_U:
+        user_select_position_by_key(4);
+        break;
+    case Qt::Key_I:
+        user_select_position_by_key(5);
+        break;
+    case Qt::Key_O:
+        user_select_position_by_key(6);
+        break;
+    case Qt::Key_P:
+        user_select_position_by_key(7);
+        break;
+    case Qt::Key_M:
+        for (size_t i = 0; i < gui_trades.size(); i++)
+            gui_trades[i]->UserChooseOrder(true);
+        break;
+    case Qt::Key_N:
+        for (size_t i = 0; i < gui_trades.size(); i++)
+            gui_trades[i]->UserChooseOrder(false);
         break;
     default:
         break;
@@ -113,6 +149,10 @@ void GuiMain::register_bind() const
     QObject::connect(pQuote, &Quote::QuoteError, this, &GuiMain::OnQuoteError);
     QObject::connect(pTrader, &Trader::TraderError, this, &GuiMain::OnTraderError);
 
+    // Main <-> Trader
+    QObject::connect(this, &GuiMain::SellReqSelling, pTrader, &Trader::OnSellReqSelling);
+    QObject::connect(pTrader, &Trader::AccountPositionFinished, this, &GuiMain::OnAccountPositionFinished);
+
     // Trader <-> Quote
     QObject::connect(pQuote, &Quote::PositionQuoteReceived, pTrader, &Trader::OnPositionQuoteReceived);
 
@@ -130,14 +170,16 @@ void GuiMain::register_bind() const
         QObject::connect(pQuote, &Quote::MarketDataReceived, &sell, &GuiSell::OnMarketDataReceived);
         // Sell <-> Trader
         QObject::connect(pTrader, &Trader::AccountPositionReceived, &sell, &GuiSell::OnPositionReceived);
-        QObject::connect(&sell, &GuiSell::SellReqSelling, pTrader, &Trader::OnSellReqSelling);
+        QObject::connect(&sell, &GuiSell::SellReqSelling, this, &GuiMain::OnSellReqSelling);
         QObject::connect(pTrader, &Trader::OrderReceived, &sell, &GuiSell::OnOrderReceived);
+        QObject::connect(pTrader, &Trader::OrderTraded, &sell, &GuiSell::OnOrderTraded);
         QObject::connect(pTrader, &Trader::OrderCanceled, &sell, &GuiSell::OnOrderCanceled);
+        QObject::connect(pTrader, &Trader::OrderError, &sell, &GuiSell::OnOrderError);
+        QObject::connect(pTrader, &Trader::OrderRefused, &sell, &GuiSell::OnOrderRefused);
         // Sell -> Sell
         QObject::connect(&sell, &GuiSell::SellReqSyncStockCode, this, &GuiMain::OnSellReqSyncStockCode);
-        QObject::connect(&sell, &GuiSell::SellReqSyncStockInfo, this, &GuiMain::OnSellReqSyncStockInfo);
         QObject::connect(&sell, &GuiSell::SellReqSyncStockPrice, this, &GuiMain::OnSellReqSyncStockPrice);
-        QObject::connect(&sell, &GuiSell::SellReqSyncSellQty, this, &GuiMain::OnSellReqSyncSellQty);
+        QObject::connect(&sell, &GuiSell::SellReqSyncStockInfo, this, &GuiMain::OnSellReqSyncStockInfo);
 
         auto &trade = *gui_trades[i];
         // Trade <- Trader
@@ -174,7 +216,8 @@ void GuiMain::connect_accounts()
             sell.Activate(accounts_connected);
         else
         {
-            if (sell.GetID() == 0)
+            auto &trade = *gui_trades[i];
+            if (sell.HasFocus() || trade.HasFocus())
                 sell.Activate(true);
             else
                 sell.Activate(false);
@@ -187,6 +230,24 @@ void GuiMain::connect_accounts()
         ui->accountsConnected->setText(QString(QStringLiteral("账户未关联")));
 }
 
+void GuiMain::user_select_position_by_key(size_t index) const
+{
+    QWidget *w = QApplication::focusWidget();
+    if (w->objectName() == "sellablePositionTable")
+    {
+        if (w->parent()->parent()->parent()->objectName() == "tabL")
+            gui_trades[0]->UserSelectPosition(index);
+        else if (w->parent()->parent()->parent()->objectName() == "tabR")
+            gui_trades[1]->UserSelectPosition(index);
+        return;
+    }
+
+    if (w->parent()->objectName() == "sellL")
+        gui_trades[0]->UserSelectPosition(index);
+    else if (w->parent()->objectName() == "sellR")
+        gui_trades[1]->UserSelectPosition(index);
+}
+
 void GuiMain::OnSellReqSyncStockCode(size_t id, const QString &stock_code) const
 {
     if (accounts_connected)
@@ -196,20 +257,6 @@ void GuiMain::OnSellReqSyncStockCode(size_t id, const QString &stock_code) const
             if (sell->GetID() != id)
             {
                 sell->SetStockCode(stock_code);
-            }
-        }
-    }
-}
-
-void GuiMain::OnSellReqSyncStockInfo(size_t id, const QString &stock_code, const QString &stock_name) const
-{
-    if (accounts_connected)
-    {
-        for (auto sell : gui_sells)
-        {
-            if (sell->GetID() != id)
-            {
-                sell->SyncStockInfo(stock_code, stock_name);
             }
         }
     }
@@ -229,7 +276,7 @@ void GuiMain::OnSellReqSyncStockPrice(size_t id, double price) const
     }
 }
 
-void GuiMain::OnSellReqSyncSellQty(size_t id, int64_t sell_qty, int64_t total_qty) const
+void GuiMain::OnSellReqSyncStockInfo(size_t id, const StockSellInfo &stock_info) const
 {
     if (accounts_connected)
     {
@@ -237,7 +284,104 @@ void GuiMain::OnSellReqSyncSellQty(size_t id, int64_t sell_qty, int64_t total_qt
         {
             if (sell->GetID() != id)
             {
-                sell->SetSellQty(sell_qty, total_qty);
+                sell->SyncStockInfo(stock_info);
+            }
+        }
+    }
+}
+
+void GuiMain::OnSellReqSelling(size_t id, const QString &stock_code, const QString &stock_name, double price, int64_t quantity) const
+{
+    auto &cfg = Config::get_instance().get_accounts_config();
+    QString text = QString(cfg[id].user.c_str());
+    text += QStringLiteral("是否卖出：\n");
+    text += stock_name;
+    text += "\n";
+    text += QStringLiteral("价格：");
+    text += QString::number(price, 'f', 2);
+    text += "\n";
+    text += QStringLiteral("数量：");
+    text += QString::number(quantity);
+
+    if (accounts_connected)
+    {
+        for (auto sell : gui_sells)
+        {
+            if (sell->GetID() != id)
+            {
+                double price_ = sell->GetSellPrice();
+                int quantity_ = sell->GetSellQty();
+                if (quantity_ != 0)
+                {
+                    text += "\n";
+                    text += "\n";
+                    text += QString(cfg[sell->GetID()].user.c_str());
+                    text += QStringLiteral("是否卖出：\n");
+                    text += stock_name;
+                    text += "\n";
+                    text += QStringLiteral("价格：");
+                    text += QString::number(price_, 'f', 2);
+                    text += "\n";
+                    text += QStringLiteral("数量：");
+                    text += QString::number(quantity_);
+                }
+
+                if (QMessageBox::information(nullptr, "Req Selling", text, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+                {
+                    SellReqSelling(id, stock_code, price, quantity);
+                    if (quantity_ != 0)
+                    {
+                        SellReqSelling(sell->GetID(), stock_code, price_, quantity_);
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if (QMessageBox::information(nullptr, "Req Selling", text, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+        {
+            SellReqSelling(id, stock_code, price, quantity);
+        }
+    }
+}
+
+void GuiMain::OnAccountPositionFinished()
+{
+    nFinishedPositions++;
+    if (nFinishedPositions == nAccounts)
+    {
+        set<StockCode> total_positions, common_positions, v;
+        for (auto &trade : gui_trades)
+        {
+            auto p = trade->GetSellPositions();
+            total_positions.insert(p.begin(), p.end());
+            if (common_positions.size() == 0)
+                common_positions = p;
+            else
+            {
+                set_intersection(common_positions.begin(), common_positions.end(), p.begin(), p.end(), inserter(v, v.begin()));
+                common_positions = v;
+                v.clear();
+            }
+        }
+        for (auto &trade : gui_trades)
+        {
+            auto p = trade->GetSellPositions();
+            set<StockCode> diff;
+            set_difference(p.begin(), p.end(), common_positions.begin(), common_positions.end(), inserter(diff, diff.begin()));
+            vector<StockCode> sell_positions;
+            for (auto &stock_code : common_positions)
+            {
+                sell_positions.push_back(stock_code);
+            }
+            for (auto &stock_code : diff)
+            {
+                sell_positions.push_back(stock_code);
+            }
+            for (size_t i = 0; i < sell_positions.size(); i++)
+            {
+                trade->SetSellPositionIndex(sell_positions[i], i + 1);
             }
         }
     }

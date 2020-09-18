@@ -95,24 +95,45 @@ namespace HuiFu
     {
         if (error_info == nullptr || error_info->error_id == 0)
         {
+            qCInfo(XTPTrader) << session_id << position->ticker_name << position->total_qty << position->sellable_qty << is_last;
+            // 应避免加已卖光的昨仓
             if (position->total_qty == 0)
             {
+                if (is_last)
+                {
+                    AccountPositionFinished();
+                    start_late_count++;
+                    if (start_late_count == nAccounts)
+                        is_start_late = false;
+                }
                 return;
             }
 
             for (size_t i = 0; i < nAccounts; i++)
             {
-                // 只在启动程序时查询一次持仓，应避免加今仓和已卖光的昨仓
-                if (session_id == mSessionIDs[i] && position->yesterday_position != 0 && position->total_qty != 0)
+                // 只在启动程序时查询一次持仓
+                if (session_id == mSessionIDs[i])
                 {
-                    qCInfo(XTPTrader) << QStringLiteral("加入持仓") << position->ticker_name << position->total_qty << position->sellable_qty;
+                    qCInfo(XTPTrader) << QString::number(i) << QStringLiteral(" 加入持仓：") << position->ticker_name << position->total_qty << position->sellable_qty;
+                    if (mAsset[i].positions.find(position->ticker) != mAsset[i].positions.end())
+                    {
+                        auto &p = mAsset[i].positions.at(position->ticker);
+                        p.market = position->market;
+                        p.total_qty = position->total_qty;
+                        p.sellable_qty = position->sellable_qty;
+                        p.last_price = position->avg_price;
+                    }
+                    else
+                        mAsset[i].positions[position->ticker] = Position{
+                            position->market,
+                            position->total_qty,
+                            position->sellable_qty,
+                            position->avg_price};
+                }
 
-                    mAsset[i].positions[position->ticker] = Position{
-                        position->market,
-                        position->total_qty,
-                        position->sellable_qty,
-                        position->avg_price};
-
+                // 应避免加今仓
+                if (session_id == mSessionIDs[i] && position->yesterday_position != 0)
+                {
                     AccountPositionReceived(i, PositionData{
                                                    position->ticker,
                                                    position->ticker_name,
@@ -121,11 +142,25 @@ namespace HuiFu
                                                    position->sellable_qty});
                 }
             }
+
+            if (is_last)
+            {
+                AccountPositionFinished();
+                start_late_count++;
+                if (start_late_count == nAccounts)
+                    is_start_late = false;
+            }
         }
         else
         {
             if (error_info->error_id == 11000350)
+            {
+                AccountPositionFinished();
+                start_late_count++;
+                if (start_late_count == nAccounts)
+                    is_start_late = false;
                 qCInfo(XTPTrader) << session_id << QStringLiteral("没有持仓");
+            }
             else
                 qCCritical(XTPTrader) << QStringLiteral("查询持仓错误：") << error_info->error_id << error_info->error_msg;
         }
@@ -243,7 +278,14 @@ namespace HuiFu
     {
         if (error_info != nullptr && error_info->error_id != 0)
         {
-            qCCritical(XTPTrader) << QStringLiteral("收到报单事件错误消息：") << order_info->order_xtp_id << error_info->error_id << error_info->error_msg;
+            if (order_info != nullptr)
+                qCCritical(XTPTrader) << QStringLiteral("收到报单事件错误消息：") << order_info->order_xtp_id << error_info->error_id << error_info->error_msg;
+            else
+                qCCritical(XTPTrader) << QStringLiteral("收到报单事件错误消息：") << error_info->error_id << error_info->error_msg;
+
+            // 找出账户id
+            size_t acc_index = get_account_index(session_id, order_info->order_client_id);
+            OrderError(acc_index, order_info->ticker, error_info->error_msg, error_info->error_id);
             return;
         }
         qCInfo(XTPTrader) << QStringLiteral("报单状态变化：") << order_info->order_xtp_id << order_info->ticker;
@@ -339,7 +381,12 @@ namespace HuiFu
                 order_sell_canceled(session_id, order);
             break;
         case XTP_ORDER_STATUS_REJECTED:
+        {
             qCInfo(XTPTrader) << QStringLiteral("已拒绝");
+            // 找出账户id
+            size_t acc_index = get_account_index(session_id, order.order_client_id);
+            OrderRefused(acc_index, order.ticker);
+        }
             return;
         case XTP_ORDER_STATUS_UNKNOWN:
             qCInfo(XTPTrader) << QStringLiteral("未知订单状态");

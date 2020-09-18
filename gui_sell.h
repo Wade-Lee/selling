@@ -41,77 +41,6 @@ class GuiSell : public QWidget
 protected:
 	bool eventFilter(QObject *, QEvent *) override;
 
-#pragma region 股票代码和股票名称
-private:
-	void req_stock_info();
-
-public slots:
-	void UserEditStockCode(QString);
-	void OnUserReqSellPosition(const HuiFu::OrderReq &);
-
-signals:
-	void MarketReqSubscribe(int, const QString &) const;
-	void SellReqSyncStockCode(size_t, const QString &) const;
-	void SellReqSyncStockInfo(size_t, const QString &, const QString &) const;
-
-public:
-	void SetStockCode(const QString &text);
-	void SetStockName(const QString &text) const;
-#pragma endregion
-
-#pragma region 卖出价格
-public slots:
-	void UserEditSellPrice(double);
-	void UserSelectPrice(int);
-
-signals:
-	void SellReqSyncStockPrice(size_t, double) const;
-
-public:
-	void SetSellPrice(double price) const;
-
-private:
-	void user_enter_price();
-#pragma endregion
-
-#pragma region 可卖股数和卖出数量
-public slots:
-	void UserReqSellAllQty();
-	void UserEditSellQty(int);
-	void UserSelectSellQty(int);
-	void OnOrderReceived(size_t, const HuiFu::OrderData &);
-	void OnOrderCanceled(size_t, const HuiFu::CancelData &);
-
-signals:
-	void SellReqSyncSellQty(size_t, int, int) const;
-
-public:
-	// 设置可卖股数及清零卖出数量
-	void SetSellableQty(long sellable_qty = 0) const;
-	// 按序号设置卖出数量
-	void SetSellQty(int index) const;
-	// 按分母设置卖出数量
-	void SetSellQtyDeno(int deno) const;
-	// 同步另一个账户的卖出数量
-	void SetSellQty(int64_t, int64_t) const;
-
-private:
-	void update_sell_qty(long) const;
-	void input_sell_qty_deno();
-#pragma endregion
-
-#pragma region 卖出和重置
-public slots:
-	void UserReqSelling();
-	void UserClear();
-
-signals:
-	void SellReqSelling(size_t, const QString &, double, int64_t) const;
-
-private:
-	void req_selling();
-#pragma endregion
-
 #pragma region 属性成员
 private:
 	// 对应账户id
@@ -122,6 +51,9 @@ private:
 	// 是否被激活
 	bool activated = false;
 
+	// 是否拥有焦点
+	bool focused = false;
+
 public:
 	size_t GetID() const { return id; }
 	const HuiFu::StockCode &GetCurrentStockCode() const { return current_stock_code; }
@@ -130,6 +62,7 @@ public:
 	bool IsActivated() const { return activated; }
 
 	void SetFocus();
+	bool HasFocus() const { return focused; }
 #pragma endregion
 
 #pragma region 仓位管理
@@ -149,6 +82,80 @@ private:
 public slots:
 	void OnPositionReceived(size_t, const HuiFu::PositionData &);
 	void OnMarketDataReceived(const HuiFu::MarketData &);
+	void OnUserReqSellPosition(const HuiFu::OrderReq &);
+#pragma endregion
+
+#pragma region 股票代码和股票名称
+public slots:
+	void UserEditStockCode(QString);
+
+signals:
+	void SellReqSyncStockCode(size_t, const QString &) const;
+	void MarketReqSubscribe(int, const QString &) const;
+
+public:
+	void SetStockCode(const QString &text);
+	void SetStockName(const QString &text) const;
+#pragma endregion
+
+#pragma region 卖出价格
+public slots:
+	void UserEditSellPrice(double);
+	void UserSelectPrice(int);
+
+signals:
+	void SellReqSyncStockPrice(size_t, double) const;
+
+public:
+	void SetSellPrice(double price) const;
+	double GetSellPrice() const;
+#pragma endregion
+
+#pragma region 可卖股数和卖出数量
+public slots:
+	void UserReqSellAllQty();
+	void UserEditSellQty(int);
+	void UserSelectSellQty(int);
+	void OnOrderReceived(size_t, const HuiFu::OrderData &);
+	void OnOrderTraded(size_t, const HuiFu::TradeData &);
+	void OnOrderCanceled(size_t, const HuiFu::CancelData &);
+
+public:
+	// 设置可卖股数及清零卖出数量
+	void SetSellableQty(long sellable_qty = 0) const;
+	// 按序号设置卖出数量
+	void SetSellQty(int index) const;
+	// 按分母设置卖出数量
+	void SetSellQtyDeno(int deno) const;
+	// 同步另一个账户的卖出数量
+	void SetSellQty(int64_t, int64_t) const;
+	int GetSellQty() const;
+
+private:
+	void update_sell_qty(long) const;
+	void input_sell_qty_deno();
+#pragma endregion
+
+#pragma region 卖出和重置
+public slots:
+	void UserReqSelling();
+	void UserClear();
+	void OnOrderError(size_t, const QString &, const QString &, int32_t);
+	void OnOrderRefused(size_t, const QString &);
+
+signals:
+	void SellReqSelling(size_t, const QString &, const QString &, double, int64_t) const;
+#pragma endregion
+
+#pragma region 关联账户
+signals:
+	void SellReqSyncStockInfo(size_t, const HuiFu::StockSellInfo &) const;
+
+public:
+	void SyncStockInfo(const HuiFu::StockSellInfo &);
+
+private:
+	void req_stock_info();
 #pragma endregion
 
 private:
@@ -157,7 +164,5 @@ private:
 public:
 	explicit GuiSell(QWidget *parent = nullptr);
 	~GuiSell();
-
-	void SyncStockInfo(const HuiFu::StockCode &, const QString &);
 };
 #endif // GUI_SELL_H

@@ -26,8 +26,6 @@ namespace HuiFu
     public slots:
         void OnMarketReqSubscribe(int, const QString &);
         void OnPositionReqSubscribe(XTP_EXCHANGE_TYPE, const QString &);
-        // TODO：
-        void OnPositionReqUnSubscribe(const QString &);
 
     signals:
         void QuoteError() const;
@@ -66,14 +64,6 @@ namespace HuiFu
     public:
         virtual void OnSubMarketData(XTPST *, XTPRI *, bool) override;
         virtual void OnDepthMarketData(XTPMD *, int64_t[], int32_t, int32_t, int64_t[], int32_t, int32_t) override;
-#pragma endregion
-
-#pragma region 退订快照
-    private:
-        bool unsubscribe(XTP_EXCHANGE_TYPE, const StockCode &);
-
-    public:
-        virtual void OnUnSubMarketData(XTPST *, XTPRI *, bool) override;
 #pragma endregion
 
     public:

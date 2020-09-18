@@ -3,7 +3,7 @@
  <class>GuiMarket</class>
  <widget class="QWidget" name="GuiMarket">
   <property name="enabled">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <property name="geometry">
    <rect>
@@ -40,6 +40,9 @@
    </property>
    <item row="4" column="0">
     <widget class="QLabel" name="ask3">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>卖三</string>
      </property>
@@ -47,6 +50,9 @@
    </item>
    <item row="10" column="2">
     <widget class="QLabel" name="bid_q2">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -64,6 +70,9 @@
    </item>
    <item row="7" column="2">
     <widget class="QLabel" name="ask_q1">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -71,6 +80,9 @@
    </item>
    <item row="3" column="2">
     <widget class="QLabel" name="ask_q4">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -85,6 +97,9 @@
    </item>
    <item row="5" column="2">
     <widget class="QLabel" name="ask_q2">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -92,6 +107,9 @@
    </item>
    <item row="2" column="2">
     <widget class="QLabel" name="ask_q5">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -99,6 +117,9 @@
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="ask5">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
@@ -132,6 +153,9 @@
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="ask4">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>卖四</string>
      </property>
@@ -139,6 +163,9 @@
    </item>
    <item row="10" column="0">
     <widget class="QLabel" name="bid2">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>买二</string>
      </property>
@@ -146,6 +173,9 @@
    </item>
    <item row="13" column="0">
     <widget class="QLabel" name="bid5">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>买五</string>
      </property>
@@ -163,6 +193,9 @@
    </item>
    <item row="11" column="0">
     <widget class="QLabel" name="bid3">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>买三</string>
      </property>
@@ -170,6 +203,9 @@
    </item>
    <item row="11" column="2">
     <widget class="QLabel" name="bid_q3">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -178,7 +214,7 @@
    <item row="7" column="0">
     <widget class="QLabel" name="ask1">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="text">
       <string>卖一</string>
@@ -187,6 +223,9 @@
    </item>
    <item row="9" column="0">
     <widget class="QLabel" name="bid1">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>买一</string>
      </property>
@@ -194,6 +233,9 @@
    </item>
    <item row="9" column="2">
     <widget class="QLabel" name="bid_q1">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -221,6 +263,9 @@
    </item>
    <item row="12" column="2">
     <widget class="QLabel" name="bid_q4">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -228,6 +273,9 @@
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="ask2">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>卖二</string>
      </property>
@@ -272,6 +320,9 @@
    </item>
    <item row="13" column="2">
     <widget class="QLabel" name="bid_q5">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -279,6 +330,9 @@
    </item>
    <item row="4" column="2">
     <widget class="QLabel" name="ask_q3">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -286,6 +340,9 @@
    </item>
    <item row="8" column="0">
     <widget class="QLabel" name="lastPriceName">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>最新</string>
      </property>
@@ -293,6 +350,9 @@
    </item>
    <item row="12" column="0">
     <widget class="QLabel" name="bid4">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>买四</string>
      </property>
@@ -317,6 +377,9 @@
    </item>
    <item row="14" column="0">
     <widget class="QLabel" name="ceilingPriceName">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string>涨跌停</string>
      </property>
@@ -325,7 +388,8 @@
    <item row="14" column="1">
     <widget class="QLabel" name="upperBoundPrice">
      <property name="styleSheet">
-      <string notr="true">background-color: rgb(255, 170, 127);</string>
+      <string notr="true">background-color: rgb(255, 170, 127);
+color: rgb(0, 0, 0);</string>
      </property>
      <property name="text">
       <string/>
@@ -335,7 +399,8 @@
    <item row="14" column="2">
     <widget class="QLabel" name="lowerBoundPrice">
      <property name="styleSheet">
-      <string notr="true">background-color: rgb(170, 255, 0);</string>
+      <string notr="true">background-color: rgb(170, 255, 0);
+color: rgb(0, 0, 0);</string>
      </property>
      <property name="text">
       <string/>

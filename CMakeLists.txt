@@ -5,6 +5,8 @@ project(selling
         DESCRIPTION "stock strategy with XTP"
         LANGUAGES    CXX)
 
+add_compile_definitions(QT_MESSAGELOGCONTEXT)
+
 # set output path
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
