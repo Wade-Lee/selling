@@ -20,8 +20,7 @@ namespace HuiFu
         XTP::API::QuoteApi *pQuoteApi;
         char **pStocks;
 
-        StockCode mMarketStock;
-        std::unordered_set<StockCode> mTraderStocks;
+        std::unordered_set<StockCode> mMarketStocks, mTraderStocks;
 
     public slots:
         void OnMarketReqSubscribe(int, const QString &);

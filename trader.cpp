@@ -1,8 +1,14 @@
 ﻿#include "trader.h"
 #include "config.h"
 #include <time.h>
+#include <QDateTime>
 
 #define ORDER_QUNTITY_LIMIT 999900
+#define WITHHOLD_BUY_SPECIAL_RATE 0.00032
+#define WITHHOLD_SELL_SPECIAL_RATE 0.00052
+#define WITHHOLD_BUY_RATE 0.00004
+#define WITHHOLD_SELL_RATE 0.00104
+#define ORDER_SELL_CLIENT_ID 100
 
 using namespace std;
 using namespace XTP::API;
@@ -278,6 +284,13 @@ namespace HuiFu
     {
         if (error_info != nullptr && error_info->error_id != 0)
         {
+            if (order_info->order_client_id != ORDER_SELL_CLIENT_ID)
+                return;
+
+            int64_t current_date_time = QDateTime::currentDateTime().toString("yyyyMMddhhmmss").toLongLong() * 1000;
+            if (current_date_time > order_info->insert_time + 30000)
+                return;
+
             if (order_info != nullptr)
                 qCCritical(XTPTrader) << QStringLiteral("收到报单事件错误消息：") << order_info->order_xtp_id << error_info->error_id << error_info->error_msg;
             else
@@ -432,9 +445,13 @@ namespace HuiFu
             order.quantity,
             order.price};
 
+        // 计算预扣费用
+        double order_amount = order.price * order.quantity;
+        double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
+
         // 更新资金信息
-        mAsset[acc_index].buying_power -= order.price * order.quantity;
-        mAsset[acc_index].withholding_amount += order.price * order.quantity;
+        mAsset[acc_index].buying_power -= order_amount + holding_amount;
+        mAsset[acc_index].withholding_amount += order_amount + holding_amount;
         // 刷新Asset界面显示
         mAsset[acc_index].security_asset = 0;
         for (auto &position : positions)
@@ -492,6 +509,22 @@ namespace HuiFu
             order.side,
             order.quantity,
             order.price};
+
+        // 计算预扣费用
+        double order_amount = order.price * order.quantity;
+        double holding_amount = max(order_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + order_amount * WITHHOLD_SELL_RATE;
+
+        // 更新资金信息
+        mAsset[acc_index].buying_power -= holding_amount;
+        mAsset[acc_index].withholding_amount += holding_amount;
+        // 刷新Asset界面显示
+        mAsset[acc_index].security_asset = 0;
+        for (auto &position : positions)
+        {
+            mAsset[acc_index].security_asset += position.second.total_qty * position.second.last_price;
+        }
+        qCInfo(XTPTrader) << QStringLiteral("账户资金在卖出证券资产挂单时：") << mAsset[acc_index].buying_power << mAsset[acc_index].withholding_amount << mAsset[acc_index].security_asset;
+        AssetReceived(acc_index, AssetData{mAsset[acc_index].buying_power, mAsset[acc_index].withholding_amount, mAsset[acc_index].security_asset});
     }
 
     void Trader::order_buy_canceled(uint64_t session_id, const XTPOrderInfo &order)
@@ -533,9 +566,13 @@ namespace HuiFu
             positions.erase(stock_code);
         }
 
+        // 计算预扣费用
+        double order_amount = order.price * order.qty_left;
+        double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
+
         // 更新资金信息
-        mAsset[acc_index].buying_power += order.price * order.qty_left;
-        mAsset[acc_index].withholding_amount -= order.price * order.qty_left;
+        mAsset[acc_index].buying_power += order_amount + holding_amount;
+        mAsset[acc_index].withholding_amount -= order_amount + holding_amount;
         // 刷新Asset界面显示
         mAsset[acc_index].security_asset = 0;
         for (auto &position : mAsset[acc_index].positions)
@@ -589,6 +626,22 @@ namespace HuiFu
                 positions.erase(stock_code);
             }
         }
+
+        // 计算预扣费用
+        double order_amount = order.price * order.qty_left;
+        double holding_amount = max(order_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + order_amount * WITHHOLD_SELL_RATE;
+
+        // 更新资金信息
+        mAsset[acc_index].buying_power += holding_amount;
+        mAsset[acc_index].withholding_amount -= holding_amount;
+        // 刷新Asset界面显示
+        mAsset[acc_index].security_asset = 0;
+        for (auto &position : positions)
+        {
+            mAsset[acc_index].security_asset += position.second.total_qty * position.second.last_price;
+        }
+        qCInfo(XTPTrader) << QStringLiteral("账户资金在卖出证券资产撤单时：") << mAsset[acc_index].buying_power << mAsset[acc_index].withholding_amount << mAsset[acc_index].security_asset;
+        AssetReceived(acc_index, AssetData{mAsset[acc_index].buying_power, mAsset[acc_index].withholding_amount, mAsset[acc_index].security_asset});
     }
 
     void Trader::order_buy_traded(uint32_t session_id, const XTPTradeReport &trade)
@@ -765,8 +818,8 @@ namespace HuiFu
         mOrder.side = XTP_SIDE_SELL;
         mOrder.price_type = XTP_PRICE_LIMIT;
         mOrder.quantity = 0;
-        mOrder.order_client_id = 1;
         mOrder.position_effect = XTP_POSITION_EFFECT_INIT;
+        mOrder.order_client_id = 100;
 
         // 判断当前是否为中途启动
         time_t crtTime;

@@ -61,13 +61,13 @@ namespace HuiFu
     {
         if (subscribe(static_cast<XTP_EXCHANGE_TYPE>(exchange_id), stock_code))
         {
-            mMarketStock = stock_code;
+            if (mMarketStocks.find(stock_code) == mMarketStocks.end())
+                mMarketStocks.insert(stock_code);
             Subscribed(stock_code, true);
         }
         else
         {
             Subscribed(stock_code, false);
-            mMarketStock = "";
         }
     }
 
@@ -84,7 +84,7 @@ namespace HuiFu
 
     bool Quote::subscribe(XTP_EXCHANGE_TYPE exchange_id, const StockCode &stock_code) const
     {
-        if (mMarketStock == stock_code || mTraderStocks.find(stock_code) != mTraderStocks.end())
+        if (mMarketStocks.find(stock_code) != mMarketStocks.end() || mTraderStocks.find(stock_code) != mTraderStocks.end())
         {
             return true;
         }
@@ -106,20 +106,19 @@ namespace HuiFu
     {
         if (error_info == nullptr || error_info->error_id == 0)
         {
-            if (mMarketStock == ticker->ticker)
-                Subscribed(ticker->ticker, true);
+            Subscribed(ticker->ticker, true);
         }
         else
         {
+            Subscribed(ticker->ticker, false);
             qCCritical(XTPQuote) << QStringLiteral("订阅行情错误：") << ticker->ticker << error_info->error_id << error_info->error_msg;
             if (mTraderStocks.find(ticker->ticker) != mTraderStocks.end())
             {
                 mTraderStocks.erase(ticker->ticker);
             }
-            else if (mMarketStock == ticker->ticker)
+            if (mMarketStocks.find(ticker->ticker) != mMarketStocks.end())
             {
-                mMarketStock = "";
-                Subscribed(ticker->ticker, false);
+                mMarketStocks.erase(ticker->ticker);
             }
         }
     }
@@ -133,7 +132,7 @@ namespace HuiFu
         int32_t ask1_count,
         int32_t max_ask1_count)
     {
-        if (mMarketStock == market_data->ticker)
+        if (mMarketStocks.find(market_data->ticker) != mMarketStocks.end())
         {
             MarketDataReceived(MarketData{
                 market_data->ticker,
@@ -157,7 +156,7 @@ namespace HuiFu
     }
 #pragma endregion
 
-    Quote::Quote(QObject *parent) : QObject(parent), mMarketStock("")
+    Quote::Quote(QObject *parent) : QObject(parent)
     {
         auto cfg = Config::get_instance().get_system_config();
         pQuoteApi = QuoteApi::CreateQuoteApi(

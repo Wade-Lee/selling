@@ -64,7 +64,6 @@ void GuiMarket::OnMarketDataReceived(const MarketData &d)
 		return;
 	}
 
-	pre_close_price = d.pre_close_price;
 	update_quotes(d);
 }
 
@@ -80,6 +79,7 @@ void GuiMarket::set_label_style_sheet(QLabel *pLabel, double price) const
 
 void GuiMarket::update_quotes(const MarketData &d)
 {
+	pre_close_price = mQuotes.at(d.stock_code).pre_close_price;
 	ui->lastPrice->setText(QString::number(d.last_price, 'f', 2));
 	set_label_style_sheet(ui->lastPrice, d.last_price);
 	double pct = (d.last_price - d.pre_close_price) / d.pre_close_price;

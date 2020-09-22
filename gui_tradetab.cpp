@@ -2,6 +2,7 @@
 #include "ui_gui_tradetab.h"
 
 #include "gui_selectorder.h"
+#include "gui_dialog.h"
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QSpinBox>
@@ -220,6 +221,8 @@ void GuiTradeTab::insert_position(const StockCode &stock_code, const QString &st
     ui->positionTable->setItem(rows, 2, new QTableWidgetItem(QString::number(total_qty)));
     ui->positionTable->setItem(rows, 3, new QTableWidgetItem(QString::number(price, 'f', 2)));
     ui->positionTable->setItem(rows, 4, new QTableWidgetItem(QString::number(price * total_qty, 'f', 2)));
+    ui->positionTable->setItem(rows, 5, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
+    ui->positionTable->setItem(rows, 6, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
 
     mPositions[stock_code] = ui->positionTable->item(rows, 0);
 }
@@ -247,6 +250,10 @@ void GuiTradeTab::OnPositionReceived(size_t id_, const PositionData &d)
         return;
     }
 
+    // dlg = new TipsDialog(QStringLiteral("测试对话框"));
+    // dlg->setModal(false);
+    // dlg->show();
+
     PositionReqSubscribe(
         d.exchange_id,
         d.stock_code);
@@ -257,6 +264,7 @@ void GuiTradeTab::OnPositionReceived(size_t id_, const PositionData &d)
 
 void GuiTradeTab::OnPositionQuoteReceived(const TraderMarketData &d)
 {
+
     if (mPositions.find(d.stock_code) != mPositions.end())
     {
         int i = ui->positionTable->row(mPositions.at(d.stock_code));
@@ -342,6 +350,8 @@ void GuiTradeTab::add_buy_position(const HuiFu::TradeData &d)
         ui->positionTable->item(i, 2)->setText(QString::number(total_qty));
         ui->positionTable->item(i, 3)->setText(QString::number(d.price, 'f', 2));
         ui->positionTable->item(i, 4)->setText(QString::number(d.price * total_qty, 'f', 2));
+        ui->positionTable->item(i, 5)->setText(QString::number(d.price, 'f', 2));
+        ui->positionTable->item(i, 6)->setText(QString::number(0.0, 'f', 2));
     }
     else
     {
