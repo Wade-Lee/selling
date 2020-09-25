@@ -24,7 +24,11 @@ namespace HuiFu
         XTP_MARKET_TYPE market = XTP_MKT_INIT;
         int64_t total_qty = 0;
         int64_t sellable_qty = 0;
+        double cost_price = 0.0;
         double last_price = 0.0;
+        int64_t trade_qty = 0;
+        double trade_amount = 0.0;
+        double trade_avg_price = 0.0;
 
         // 订单号 -> 挂单信息
         std::map<uint64_t, RestingOrder> resting_orders;
@@ -45,12 +49,11 @@ namespace HuiFu
 
     private:
         XTP::API::TraderApi *pTraderApi;
-        bool is_start_late = false;
-        size_t start_late_count = 0;
 
         size_t nAccounts;
         std::vector<uint64_t> mSessionIDs;
         std::vector<Asset> mAsset;
+        size_t get_account_index(uint64_t) const;
         size_t get_account_index(uint64_t, uint32_t) const;
 
     public slots:
@@ -65,8 +68,6 @@ namespace HuiFu
         void AccountPositionFinished();
         void OrderReceived(size_t, const OrderData &) const;
         void OrderTraded(size_t, const TradeData &) const;
-        void OrderSellTraded(size_t, const TradeData &) const;
-        void OrderBuyTraded(size_t, const TradeData &) const;
         void OrderCanceled(size_t, const CancelData &) const;
         void OrderError(size_t, const QString &, const QString &, int32_t) const;
         void OrderRefused(size_t, const QString &) const;
@@ -90,13 +91,11 @@ namespace HuiFu
 #pragma region 查询持仓 / 报单 / 资金
     private:
         void query_positions(uint64_t);
-        // void query_orders(uint64_t) const;
         void query_asset(uint64_t);
 
     public:
         void ReqAccountInfo(size_t);
         virtual void OnQueryPosition(XTPQueryStkPositionRsp *, XTPRI *, int, bool, uint64_t) override;
-        // virtual void OnQueryOrder(XTPQueryOrderRsp *, XTPRI *, int, bool, uint64_t) override;
         virtual void OnQueryAsset(XTPQueryAssetRsp *, XTPRI *, int, bool, uint64_t) override;
 #pragma endregion
 
@@ -105,13 +104,13 @@ namespace HuiFu
         XTPOrderInsertInfo mOrder;
 
         static QString format_time(int64_t);
-        void order_event(uint64_t, const XTPOrderInfo &);
-        void order_sell_inited(uint64_t, const XTPOrderInfo &);
-        void order_buy_inited(uint64_t, const XTPOrderInfo &);
-        void order_sell_canceled(uint64_t, const XTPOrderInfo &);
-        void order_buy_canceled(uint64_t, const XTPOrderInfo &);
-        void order_sell_traded(uint32_t, const XTPTradeReport &);
-        void order_buy_traded(uint32_t, const XTPTradeReport &);
+        void order_event(size_t, const XTPOrderInfo &);
+        void order_sell_inited(size_t, const XTPOrderInfo &);
+        void order_buy_inited(size_t, const XTPOrderInfo &);
+        void order_sell_canceled(size_t, const XTPOrderInfo &);
+        void order_buy_canceled(size_t, const XTPOrderInfo &);
+        void order_sell_traded(size_t, const XTPTradeReport &);
+        void order_buy_traded(size_t, const XTPTradeReport &);
 
     public:
         virtual void OnOrderEvent(XTPOrderInfo *, XTPRI *, uint64_t) override;

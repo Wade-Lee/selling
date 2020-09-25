@@ -82,14 +82,17 @@ void GuiMarket::update_quotes(const MarketData &d)
 	pre_close_price = mQuotes.at(d.stock_code).pre_close_price;
 	ui->lastPrice->setText(QString::number(d.last_price, 'f', 2));
 	set_label_style_sheet(ui->lastPrice, d.last_price);
-	double pct = (d.last_price - d.pre_close_price) / d.pre_close_price;
-	ui->lastChangePct->setText(QString::number(pct * 100, 'f', 2) + "%");
-	if (fabs(pct) < numeric_limits<double>::epsilon())
-		ui->lastChangePct->setStyleSheet("color: gray;");
-	else if (pct > 0)
-		ui->lastChangePct->setStyleSheet("color: red;");
-	else
-		ui->lastChangePct->setStyleSheet("color: blue;");
+	if (d.pre_close_price > 0)
+	{
+		double pct = (d.last_price - d.pre_close_price) / d.pre_close_price;
+		ui->lastChangePct->setText(QString::number(pct * 100, 'f', 2) + "%");
+		if (fabs(pct) < numeric_limits<double>::epsilon())
+			ui->lastChangePct->setStyleSheet("color: gray;");
+		else if (pct > 0)
+			ui->lastChangePct->setStyleSheet("color: red;");
+		else
+			ui->lastChangePct->setStyleSheet("color: blue;");
+	}
 
 	for (size_t i = 0; i < QuoteStallSize; i++)
 	{

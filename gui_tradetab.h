@@ -7,6 +7,7 @@
 #include <QTabWidget>
 #include <QTableWidgetItem>
 
+#include <vector>
 #include <map>
 #include <set>
 
@@ -61,6 +62,31 @@ private:
     size_t id;
     std::map<HuiFu::StockCode, QTableWidgetItem *> mPositions, mSellPositions;
     std::map<uint64_t, QTableWidgetItem *> mOrders, mInsertOrders;
+    struct PositionPrice
+    {
+        double pre_close_price = -1.0;
+        double cost_price = -1.0;
+        double trade_avg_price = 0.0;
+
+        std::vector<double> trade_prices;
+        std::vector<int64_t> trade_qtys;
+
+        double GetTradeProfit(double current_price, int64_t total_qty) const
+        {
+            if (cost_price > 0)
+            {
+                double trade_profit = 0.0;
+                size_t n = trade_prices.size();
+                for (size_t i = 0; i < n; i++)
+                    trade_profit += (trade_prices[i] - cost_price) * trade_qtys[i];
+                trade_profit += (current_price - cost_price) * total_qty;
+                return trade_profit;
+            }
+            return 0.0;
+        }
+    };
+
+    std::map<HuiFu::StockCode, PositionPrice> mSellPositionPrices;
 
     // 是否拥有焦点
     bool focused = false;
@@ -85,7 +111,7 @@ private:
     Ui::GuiTradeTab *ui;
     TipsDialog *dlg;
 
-    void insert_position(const HuiFu::StockCode &stock_code, const QString &stock_name, int64_t total_qty, double price = 0.0);
+    void insert_position(const HuiFu::StockCode &stock_code, const QString &stock_name, int64_t total_qty, double price);
     void insert_position(const HuiFu::StockCode &stock_code, const QString &stock_name, int64_t total_qty, int64_t sellable_qty, double price = 0.0);
 };
 #endif // GUI_TRADETAB_H

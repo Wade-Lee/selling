@@ -221,8 +221,19 @@ void GuiTradeTab::insert_position(const StockCode &stock_code, const QString &st
     ui->positionTable->setItem(rows, 2, new QTableWidgetItem(QString::number(total_qty)));
     ui->positionTable->setItem(rows, 3, new QTableWidgetItem(QString::number(price, 'f', 2)));
     ui->positionTable->setItem(rows, 4, new QTableWidgetItem(QString::number(price * total_qty, 'f', 2)));
-    ui->positionTable->setItem(rows, 5, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
-    ui->positionTable->setItem(rows, 6, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
+    ui->positionTable->setItem(rows, 5, new QTableWidgetItem(QString::number(price, 'f', 2)));
+    if (mSellPositionPrices.find(stock_code) == mSellPositionPrices.end())
+    {
+        ui->positionTable->setItem(rows, 6, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
+        ui->positionTable->setItem(rows, 7, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
+    }
+    else
+    {
+        auto &prices = mSellPositionPrices.at(stock_code);
+        ui->positionTable->setItem(rows, 5, new QTableWidgetItem(QString::number(prices.trade_avg_price, 'f', 2)));
+        ui->positionTable->setItem(rows, 6, new QTableWidgetItem(QString::number(0.0, 'f', 2)));
+        ui->positionTable->setItem(rows, 7, new QTableWidgetItem(QString::number(prices.GetTradeProfit(price, total_qty), 'f', 2)));
+    }
 
     mPositions[stock_code] = ui->positionTable->item(rows, 0);
 }
@@ -258,8 +269,13 @@ void GuiTradeTab::OnPositionReceived(size_t id_, const PositionData &d)
         d.exchange_id,
         d.stock_code);
 
-    insert_position(d.stock_code, d.stock_name, d.total_qty);
-    insert_position(d.stock_code, d.stock_name, d.total_qty, d.sellable_qty);
+    if (mSellPositionPrices.find(d.stock_code) == mSellPositionPrices.end())
+        mSellPositionPrices[d.stock_code] = PositionPrice{-1.0, d.avg_price, 0.0};
+    else
+        mSellPositionPrices.at(d.stock_code).cost_price = d.avg_price;
+    insert_position(d.stock_code, d.stock_name, d.total_qty, d.avg_price);
+    if (d.yesterday_qty != 0 && d.total_qty != 0)
+        insert_position(d.stock_code, d.stock_name, d.total_qty, d.sellable_qty);
 }
 
 void GuiTradeTab::OnPositionQuoteReceived(const TraderMarketData &d)
@@ -271,6 +287,14 @@ void GuiTradeTab::OnPositionQuoteReceived(const TraderMarketData &d)
         ui->positionTable->item(i, 3)->setText(QString::number(d.last_price, 'f', 2));
         int total_qty = ui->positionTable->item(i, 2)->text().toInt();
         ui->positionTable->item(i, 4)->setText(QString::number(d.last_price * total_qty, 'f', 2));
+
+        if (mSellPositionPrices.find(d.stock_code) != mSellPositionPrices.end())
+        {
+            auto &prices = mSellPositionPrices.at(d.stock_code);
+            prices.pre_close_price = d.pre_close_price;
+            ui->positionTable->item(i, 6)->setText(QString::number((prices.trade_avg_price / prices.pre_close_price - 1) * 100, 'f', 2));
+            ui->positionTable->item(i, 7)->setText(QString::number(prices.GetTradeProfit(d.last_price, total_qty), 'f', 2));
+        }
     }
 
     if (mSellPositions.find(d.stock_code) != mSellPositions.end())
@@ -350,8 +374,9 @@ void GuiTradeTab::add_buy_position(const HuiFu::TradeData &d)
         ui->positionTable->item(i, 2)->setText(QString::number(total_qty));
         ui->positionTable->item(i, 3)->setText(QString::number(d.price, 'f', 2));
         ui->positionTable->item(i, 4)->setText(QString::number(d.price * total_qty, 'f', 2));
-        ui->positionTable->item(i, 5)->setText(QString::number(d.price, 'f', 2));
+        ui->positionTable->item(i, 5)->setText(QString::number(d.trade_avg_price, 'f', 2));
         ui->positionTable->item(i, 6)->setText(QString::number(0.0, 'f', 2));
+        ui->positionTable->item(i, 7)->setText(QString::number(0.0, 'f', 2));
     }
     else
     {
@@ -392,22 +417,35 @@ void GuiTradeTab::sub_sell_position(const HuiFu::TradeData &d, bool is_selling_p
     }
     else
     {
+        if (mSellPositionPrices.find(d.stock_code) != mSellPositionPrices.end())
+        {
+            auto &prices = mSellPositionPrices.at(d.stock_code);
+            prices.trade_avg_price = d.trade_avg_price;
+            prices.trade_prices.push_back(d.price);
+            prices.trade_qtys.push_back(d.quantity);
+        }
+        else
+        {
+            mSellPositionPrices[d.stock_code] = PositionPrice{-1.0, -1.0, d.trade_avg_price};
+        }
+
         auto it = mPositions.find(d.stock_code);
         if (it != mPositions.end())
         {
             int i = ui->positionTable->row(it->second);
             int total_qty = ui->positionTable->item(i, 2)->text().toInt();
             total_qty -= d.quantity;
-            if (total_qty == 0)
-            {
-                ui->positionTable->removeRow(ui->positionTable->row(it->second));
-                mPositions.erase(it);
-                return;
-            }
 
             ui->positionTable->item(i, 2)->setText(QString::number(total_qty));
             ui->positionTable->item(i, 3)->setText(QString::number(d.price, 'f', 2));
             ui->positionTable->item(i, 4)->setText(QString::number(d.price * total_qty, 'f', 2));
+
+            auto &prices = mSellPositionPrices.at(d.stock_code);
+            prices.trade_avg_price = d.trade_avg_price;
+            ui->positionTable->item(i, 5)->setText(QString::number(prices.trade_avg_price, 'f', 2));
+            if (prices.pre_close_price > 0)
+                ui->positionTable->item(i, 6)->setText(QString::number((prices.trade_avg_price / prices.pre_close_price - 1) * 100, 'f', 2));
+            ui->positionTable->item(i, 7)->setText(QString::number(prices.GetTradeProfit(d.price, total_qty), 'f', 2));
         }
     }
 }

@@ -241,6 +241,11 @@
         <string>平均涨幅(%)</string>
        </property>
       </column>
+      <column>
+       <property name="text">
+        <string>浮动盈亏</string>
+       </property>
+      </column>
      </widget>
     </item>
    </layout>

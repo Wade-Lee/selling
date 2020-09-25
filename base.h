@@ -175,17 +175,23 @@ namespace HuiFu
         XTP_EXCHANGE_TYPE exchange_id;
         int64_t total_qty;
         int64_t sellable_qty;
+        int64_t yesterday_qty;
+        double avg_price; // 持仓成本
 
         PositionData(
             const QString &code,
             const QString &name,
             XTP_EXCHANGE_TYPE exchange,
-            const int64_t total,
-            const int64_t sellable) : stock_code(code),
-                                      stock_name(name),
-                                      exchange_id(exchange),
-                                      total_qty(total),
-                                      sellable_qty(sellable)
+            int64_t total,
+            int64_t sellable,
+            int64_t yesterday,
+            double price) : stock_code(code),
+                            stock_name(name),
+                            exchange_id(exchange),
+                            total_qty(total),
+                            sellable_qty(sellable),
+                            yesterday_qty(yesterday),
+                            avg_price(price)
         {
             qRegisterMetaType<PositionData>("PositionData");
             qRegisterMetaType<PositionData>("PositionData&");
@@ -258,6 +264,7 @@ namespace HuiFu
         double price;
         int64_t quantity;
         double trade_amount;
+        double trade_avg_price;
 
         TradeData(
             uint64_t id,
@@ -266,13 +273,15 @@ namespace HuiFu
             QString trade_time_,
             double price_,
             int64_t quantity_,
-            double trade_amount_) : order_xtp_id(id),
-                                    stock_code(code),
-                                    side(side_),
-                                    trade_time(trade_time_),
-                                    price(price_),
-                                    quantity(quantity_),
-                                    trade_amount(trade_amount_)
+            double trade_amount_,
+            double avg_price = 0.0) : order_xtp_id(id),
+                                      stock_code(code),
+                                      side(side_),
+                                      trade_time(trade_time_),
+                                      price(price_),
+                                      quantity(quantity_),
+                                      trade_amount(trade_amount_),
+                                      trade_avg_price(avg_price)
         {
             qRegisterMetaType<TradeData>("TradeData");
             qRegisterMetaType<TradeData>("TradeData&");

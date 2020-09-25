@@ -188,7 +188,8 @@ void GuiSell::OnPositionReceived(size_t id_, const PositionData &d)
 		return;
 	}
 
-	mPositions[d.stock_code] = SellPosition{0, 0, 0, 0, 0, d.total_qty, d.sellable_qty};
+	if (d.yesterday_qty != 0)
+		mPositions[d.stock_code] = SellPosition{0, 0, 0, 0, 0, d.total_qty, d.sellable_qty};
 }
 
 void GuiSell::OnMarketDataReceived(const MarketData &d)
