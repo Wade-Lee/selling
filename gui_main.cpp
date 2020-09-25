@@ -157,6 +157,8 @@ void GuiMain::register_bind() const
 
     // Trader <-> Quote
     QObject::connect(pQuote, &Quote::PositionQuoteReceived, pTrader, &Trader::OnPositionQuoteReceived);
+    // Trader -> Dialog
+    QObject::connect(pTrader, &Trader::OrderTraded, this, &GuiMain::OnOrderTraded);
 
     // Market <- Quote
     QObject::connect(pQuote, &Quote::Subscribed, ui->market, &GuiMarket::OnSubscribed);
@@ -403,5 +405,19 @@ void GuiMain::OnTraderError() const
     {
         exit(EXIT_SUCCESS);
     }
+}
+
+void GuiMain::OnOrderTraded(size_t id, const HuiFu::TradeData &d)
+{
+    auto &cfg = Config::get_instance().get_accounts_config();
+    QString text = QString(cfg[id].user.c_str());
+    text += QStringLiteral(" 卖出股票：");
+    text += d.stock_code;
+    text += QStringLiteral(" 卖出价格：");
+    text += QString::number(d.price, 'f', 2);
+    text += QStringLiteral(" 卖出数量：");
+    text += QString::number(d.quantity);
+    dlg = new TipsDialog(text);
+    dlg->show();
 }
 #pragma endregion

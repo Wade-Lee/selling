@@ -18,6 +18,7 @@ namespace HuiFu
         XTP_SIDE_TYPE side;
         int64_t quantity;
         double price;
+        double trade_amount = 0.0;
     };
     struct Position
     {
@@ -111,6 +112,7 @@ namespace HuiFu
         void order_buy_canceled(size_t, const XTPOrderInfo &);
         void order_sell_traded(size_t, const XTPTradeReport &);
         void order_buy_traded(size_t, const XTPTradeReport &);
+        void order_buy_traded(size_t, const XTPOrderInfo &);
 
     public:
         virtual void OnOrderEvent(XTPOrderInfo *, XTPRI *, uint64_t) override;

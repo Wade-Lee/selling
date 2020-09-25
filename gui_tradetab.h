@@ -2,7 +2,6 @@
 #define GUI_TRADETAB_H
 
 #include "base.h"
-#include "gui_dialog.h"
 
 #include <QTabWidget>
 #include <QTableWidgetItem>
@@ -109,7 +108,6 @@ public:
 
 private:
     Ui::GuiTradeTab *ui;
-    TipsDialog *dlg;
 
     void insert_position(const HuiFu::StockCode &stock_code, const QString &stock_name, int64_t total_qty, double price);
     void insert_position(const HuiFu::StockCode &stock_code, const QString &stock_name, int64_t total_qty, int64_t sellable_qty, double price = 0.0);

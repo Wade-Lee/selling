@@ -2,9 +2,7 @@
 #define GUI_DIALOG_H
 
 #include <QDialog>
-// #include <QPropertyAnimation>
 #include <QRect>
-// #include <QPoint>
 #include <QTimer>
 
 namespace Ui
@@ -23,14 +21,8 @@ public:
 private:
     Ui::TipsDialog *ui;
 
-    // QPropertyAnimation *pAnimation;
     QRect mRect;
     QTimer *pTimer;
-
-    //     void showAnimation();
-    // private slots:
-    //     void closeAnimation();
-    //     void clearAll();
 };
 
 #endif // TIPS_DIALOG_H

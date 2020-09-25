@@ -7,6 +7,7 @@
 #include "quote.h"
 #include "gui_sell.h"
 #include "gui_tradetab.h"
+#include "gui_dialog.h"
 
 using namespace HuiFu;
 
@@ -38,6 +39,7 @@ protected:
 public slots:
     void OnQuoteError() const;
     void OnTraderError() const;
+    void OnOrderTraded(size_t, const HuiFu::TradeData &);
     void OnSellReqSyncStockCode(size_t, const QString &) const;
     void OnSellReqSyncStockPrice(size_t, double) const;
     void OnSellReqSyncStockInfo(size_t, const StockSellInfo &) const;
@@ -59,6 +61,7 @@ public:
 
 private:
     Ui::GuiMain *ui;
+    TipsDialog *dlg;
 
     Trader *pTrader;
     Quote *pQuote;

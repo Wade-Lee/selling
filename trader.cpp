@@ -344,6 +344,8 @@ namespace HuiFu
             return;
         case XTP_ORDER_STATUS_ALLTRADED:
             qCInfo(XTPTrader) << QStringLiteral("全部成交");
+            if (order.side == XTP_SIDE_BUY)
+                order_buy_traded(acc_index, order);
             break;
         case XTP_ORDER_STATUS_PARTTRADEDQUEUEING:
             qCInfo(XTPTrader) << QStringLiteral("部分成交");
@@ -411,9 +413,9 @@ namespace HuiFu
             .resting_orders[order.order_xtp_id] = RestingOrder{
             order.side,
             order.quantity,
-            order.price};
+            order.price, 0.0};
 
-        // 计算预扣费用
+        // 计算挂单预扣费用
         double order_amount = order.price * order.quantity;
         double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
         // 更新资金信息
@@ -456,18 +458,7 @@ namespace HuiFu
             .resting_orders[order.order_xtp_id] = RestingOrder{
             order.side,
             order.quantity,
-            order.price};
-
-        // 计算预扣费用
-        double order_amount = order.price * order.quantity;
-        double holding_amount = max(order_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + order_amount * WITHHOLD_SELL_RATE;
-        // 更新资金信息
-        auto &asset = mAsset[acc_index];
-        asset.buying_power -= holding_amount;
-        asset.withholding_amount += holding_amount;
-        // 刷新Asset界面显示
-        qCInfo(XTPTrader) << QStringLiteral("卖出证券资产挂单时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
-        AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+            order.price, 0.0};
     }
 
     void Trader::order_buy_canceled(size_t acc_index, const XTPOrderInfo &order)
@@ -500,14 +491,22 @@ namespace HuiFu
         if (position.total_qty == 0 && position.resting_orders.size() == 0)
             positions.erase(stock_code);
 
-        // 计算预扣费用
-        double order_amount = order.price * order.qty_left;
+        // 计算挂单预扣费用
+        double order_amount = order.price * order.quantity;
         double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
-
         // 更新资金信息
         auto &asset = mAsset[acc_index];
         asset.buying_power += (order_amount + holding_amount);
         asset.withholding_amount -= (order_amount + holding_amount);
+
+        if (order.qty_traded != 0)
+        {
+            // 计算买单成交预扣费用
+            holding_amount = max(order.trade_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order.trade_amount * WITHHOLD_BUY_RATE;
+            // 更新资金信息
+            asset.buying_power -= (order.trade_amount + holding_amount);
+        }
+
         // 刷新Asset界面显示
         qCInfo(XTPTrader) << QStringLiteral("买入证券资产撤单时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
         AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
@@ -541,18 +540,6 @@ namespace HuiFu
             position.resting_orders.erase(order.order_xtp_id);
         // 增加仓位的可卖数量
         position.sellable_qty += order.qty_left;
-
-        // 计算预扣费用
-        double order_amount = order.price * order.qty_left;
-        double holding_amount = max(order_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + order_amount * WITHHOLD_SELL_RATE;
-
-        // 更新资金信息
-        auto &asset = mAsset[acc_index];
-        asset.buying_power += holding_amount;
-        asset.withholding_amount -= holding_amount;
-        // 刷新Asset界面显示
-        qCInfo(XTPTrader) << QStringLiteral("账户资金在卖出证券资产撤单时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
-        AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
     }
 
     void Trader::order_buy_traded(size_t acc_index, const XTPTradeReport &trade)
@@ -587,18 +574,12 @@ namespace HuiFu
                                    trade.trade_amount,
                                    position.trade_avg_price});
 
-        // 计算预扣费用
-        double order_amount = trade.quantity * resting_order.price;
-        double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
         // 更新资金信息
         auto &asset = mAsset[acc_index];
-        asset.buying_power += (order_amount + holding_amount);
+        double order_amount = trade.quantity * resting_order.price;
+        asset.buying_power += order_amount;
         asset.buying_power -= trade.trade_amount;
-        asset.withholding_amount -= (order_amount + holding_amount);
-        // 计算买入费用
-        holding_amount = max(trade.trade_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + trade.trade_amount * WITHHOLD_BUY_RATE;
-        // 更新资金信息
-        asset.buying_power -= holding_amount;
+        asset.withholding_amount -= order_amount;
 
         // 挂单全部成交时删除
         if (resting_order.quantity == 0)
@@ -608,7 +589,26 @@ namespace HuiFu
         asset.security_asset = 0;
         for (auto &p : asset.positions)
             asset.security_asset += p.second.total_qty * p.second.last_price;
-        qCInfo(XTPTrader) << QStringLiteral("证券资产成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
+        qCInfo(XTPTrader) << QStringLiteral("买入证券成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
+        AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+    }
+
+    void Trader::order_buy_traded(size_t acc_index, const XTPOrderInfo &order)
+    {
+        // 计算预扣费用
+        double order_amount = order.quantity * order.price;
+        double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
+        // 更新资金信息
+        auto &asset = mAsset[acc_index];
+        asset.buying_power += holding_amount;
+        asset.withholding_amount -= holding_amount;
+        // 计算买入实际预扣费用
+        holding_amount = max(order.trade_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order.trade_amount * WITHHOLD_BUY_RATE;
+        // 更新资金信息
+        asset.buying_power -= holding_amount;
+
+        // 刷新Asset界面显示
+        qCInfo(XTPTrader) << QStringLiteral("买入证券全部成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
         AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
     }
 
@@ -644,15 +644,18 @@ namespace HuiFu
                                    trade.trade_amount,
                                    position.trade_avg_price});
 
-        // 计算预扣费用
-        double order_amount = resting_order.price * trade.quantity;
-        double holding_amount = max(order_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + order_amount * WITHHOLD_SELL_RATE;
+        // 计算之前卖出预扣费用
+        double holding_amount = 0.0;
+        if (resting_order.trade_amount > numeric_limits<double>::epsilon())
+            holding_amount = max(resting_order.trade_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + resting_order.trade_amount * WITHHOLD_SELL_RATE;
         // 更新资金信息
         auto &asset = mAsset[acc_index];
         asset.buying_power += holding_amount + trade.trade_amount;
-        asset.withholding_amount -= holding_amount;
-        // 计算卖出费用
-        holding_amount = max(trade.trade_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + trade.trade_amount * WITHHOLD_SELL_RATE;
+
+        // 增加挂单成交总额
+        resting_order.trade_amount += trade.trade_amount;
+        // 计算累计卖出预扣费用
+        holding_amount = max(resting_order.trade_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + resting_order.trade_amount * WITHHOLD_SELL_RATE;
         // 更新资金信息
         asset.buying_power -= holding_amount;
 
@@ -660,7 +663,7 @@ namespace HuiFu
         asset.security_asset = 0;
         for (auto &p : asset.positions)
             asset.security_asset += p.second.total_qty * p.second.last_price;
-        qCInfo(XTPTrader) << QStringLiteral("在证券资产成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
+        qCInfo(XTPTrader) << QStringLiteral("卖出证券成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
         AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
     }
 #pragma endregion

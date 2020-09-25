@@ -261,10 +261,6 @@ void GuiTradeTab::OnPositionReceived(size_t id_, const PositionData &d)
         return;
     }
 
-    // dlg = new TipsDialog(QStringLiteral("测试对话框"));
-    // dlg->setModal(false);
-    // dlg->show();
-
     PositionReqSubscribe(
         d.exchange_id,
         d.stock_code);

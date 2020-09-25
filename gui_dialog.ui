@@ -12,7 +12,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>500</width>
     <height>300</height>
    </rect>
   </property>
@@ -25,14 +25,14 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>53</x>
-     <y>61</y>
-     <width>261</width>
-     <height>71</height>
+     <x>20</x>
+     <y>60</y>
+     <width>400</width>
+     <height>70</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgb(255, 7, 81);</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string/>
