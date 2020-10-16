@@ -67,20 +67,6 @@ namespace HuiFu
 
         return nAccounts;
     }
-
-    size_t Trader::get_account_index(uint64_t session_id, uint32_t order_client_id) const
-    {
-        for (size_t i = 0; i < nAccounts; i++)
-        {
-            if (session_id == mSessionIDs[i])
-            {
-                return i;
-            }
-        }
-
-        // 重要约定：如果是由全自动程序产生的订单，则用户自定义报单引用号即为账户索引号
-        return static_cast<size_t>(order_client_id);
-    }
 #pragma endregion
 
 #pragma region 查询持仓 / 报单 / 资金
@@ -287,7 +273,7 @@ namespace HuiFu
         if (order_info->business_type == XTP_BUSINESS_TYPE_CASH)
         {
             // 找出账户id
-            size_t acc_index = get_account_index(session_id, order_info->order_client_id);
+            size_t acc_index = get_account_index(session_id);
             assert(acc_index < nAccounts);
             auto cfg = Config::get_instance().get_accounts_config()[acc_index];
             qCInfo(XTPTrader) << cfg.user.c_str() << QStringLiteral("报单状态变化：") << order_info->order_xtp_id << order_info->ticker;
@@ -301,7 +287,7 @@ namespace HuiFu
             return;
 
         // 找出账户id
-        size_t acc_index = get_account_index(session_id, trade_info->order_client_id);
+        size_t acc_index = get_account_index(session_id);
         assert(acc_index < nAccounts);
         auto cfg = Config::get_instance().get_accounts_config()[acc_index];
         qCInfo(XTPTrader) << cfg.user.c_str() << QStringLiteral("报单成交：") << trade_info->order_xtp_id << trade_info->ticker << QStringLiteral("成交价格") << trade_info->price << QStringLiteral("成交数量") << trade_info->quantity;
@@ -477,39 +463,46 @@ namespace HuiFu
                                      order.qty_left,
                                      order.trade_amount});
 
-        // 找到账户仓位
-        QString stock_code{order.ticker};
-        auto &positions = mAsset[acc_index].positions;
-        auto &position = positions.at(stock_code);
-        // 找到仓位下撤销的挂单
-        auto &resting_order = position.resting_orders.at(order.order_xtp_id);
-        resting_order.quantity -= order.qty_left; // 减少挂单数量
-        // 挂单全部撤销时删除
-        if (resting_order.quantity == 0)
-            position.resting_orders.erase(order.order_xtp_id);
-        // 买入仓位全部撤销且为空时删除
-        if (position.total_qty == 0 && position.resting_orders.size() == 0)
-            positions.erase(stock_code);
-
-        // 计算挂单预扣费用
-        double order_amount = order.price * order.quantity;
-        double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
-        // 更新资金信息
-        auto &asset = mAsset[acc_index];
-        asset.buying_power += (order_amount + holding_amount);
-        asset.withholding_amount -= (order_amount + holding_amount);
-
-        if (order.qty_traded != 0)
+        try
         {
-            // 计算买单成交预扣费用
-            holding_amount = max(order.trade_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order.trade_amount * WITHHOLD_BUY_RATE;
-            // 更新资金信息
-            asset.buying_power -= (order.trade_amount + holding_amount);
-        }
+            // 找到账户仓位
+            QString stock_code{order.ticker};
+            auto &positions = mAsset[acc_index].positions;
+            auto &position = positions.at(stock_code);
+            // 找到仓位下撤销的挂单
+            auto &resting_order = position.resting_orders.at(order.order_xtp_id);
+            resting_order.quantity -= order.qty_left; // 减少挂单数量
+            // 挂单全部撤销时删除
+            if (resting_order.quantity == 0)
+                position.resting_orders.erase(order.order_xtp_id);
+            // 买入仓位全部撤销且为空时删除
+            if (position.total_qty == 0 && position.resting_orders.size() == 0)
+                positions.erase(stock_code);
 
-        // 刷新Asset界面显示
-        qCInfo(XTPTrader) << QStringLiteral("买入证券资产撤单时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
-        AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+            // 计算挂单预扣费用
+            double order_amount = order.price * order.quantity;
+            double holding_amount = max(order_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order_amount * WITHHOLD_BUY_RATE;
+            // 更新资金信息
+            auto &asset = mAsset[acc_index];
+            asset.buying_power += (order_amount + holding_amount);
+            asset.withholding_amount -= (order_amount + holding_amount);
+
+            if (order.qty_traded != 0)
+            {
+                // 计算买单成交预扣费用
+                holding_amount = max(order.trade_amount * WITHHOLD_BUY_SPECIAL_RATE, 6.0) + order.trade_amount * WITHHOLD_BUY_RATE;
+                // 更新资金信息
+                asset.buying_power -= (order.trade_amount + holding_amount);
+            }
+
+            // 刷新Asset界面显示
+            qCInfo(XTPTrader) << QStringLiteral("买入证券资产撤单时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
+            AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+        }
+        catch (const std::exception &e)
+        {
+            qCCritical(XTPTrader) << QStringLiteral("买入证券资产撤单时越界错误：") << e.what();
+        }
     }
 
     void Trader::order_sell_canceled(size_t acc_index, const XTPOrderInfo &order)
@@ -528,18 +521,25 @@ namespace HuiFu
                                      order.qty_left,
                                      order.trade_amount});
 
-        // 找到账户仓位
-        QString stock_code{order.ticker};
-        auto &positions = mAsset[acc_index].positions;
-        auto &position = positions.at(stock_code);
-        // 找到仓位下撤销的挂单
-        auto &resting_order = position.resting_orders.at(order.order_xtp_id);
-        resting_order.quantity -= order.qty_left; // 减少挂单数量
-        // 挂单全部撤销时删除
-        if (resting_order.quantity == 0)
-            position.resting_orders.erase(order.order_xtp_id);
-        // 增加仓位的可卖数量
-        position.sellable_qty += order.qty_left;
+        try
+        {
+            // 找到账户仓位
+            QString stock_code{order.ticker};
+            auto &positions = mAsset[acc_index].positions;
+            auto &position = positions.at(stock_code);
+            // 找到仓位下撤销的挂单
+            auto &resting_order = position.resting_orders.at(order.order_xtp_id);
+            resting_order.quantity -= order.qty_left; // 减少挂单数量
+            // 挂单全部撤销时删除
+            if (resting_order.quantity == 0)
+                position.resting_orders.erase(order.order_xtp_id);
+            // 增加仓位的可卖数量
+            position.sellable_qty += order.qty_left;
+        }
+        catch (const std::exception &e)
+        {
+            qCCritical(XTPTrader) << QStringLiteral("卖出证券资产撤单时越界错误：") << e.what();
+        }
     }
 
     void Trader::order_buy_traded(size_t acc_index, const XTPTradeReport &trade)
@@ -550,47 +550,54 @@ namespace HuiFu
         // 读取股票名称
         QString stock_code{trade.ticker};
 
-        // 找到账户仓位
-        auto &position = mAsset[acc_index].positions.at(stock_code);
-        // 找到仓位下成交的挂单
-        auto &resting_order = position.resting_orders.at(trade.order_xtp_id);
-        resting_order.quantity -= trade.quantity; // 减少挂单数量
-        // 更新仓位信息
-        position.total_qty += trade.quantity;                             // 增加仓位数量
-        position.last_price = trade.price;                                // 更新仓位价格
-        position.trade_qty += trade.quantity;                             // 增加成交数量
-        position.trade_amount += trade.trade_amount;                      // 增加成交总金额
-        position.cost_price = position.trade_amount / position.trade_qty; // 计算成本价
-        position.trade_avg_price = position.cost_price;                   // 计算成交均价
+        try
+        {
+            // 找到账户仓位
+            auto &position = mAsset[acc_index].positions.at(stock_code);
+            // 找到仓位下成交的挂单
+            auto &resting_order = position.resting_orders.at(trade.order_xtp_id);
+            resting_order.quantity -= trade.quantity; // 减少挂单数量
+            // 更新仓位信息
+            position.total_qty += trade.quantity;                             // 增加仓位数量
+            position.last_price = trade.price;                                // 更新仓位价格
+            position.trade_qty += trade.quantity;                             // 增加成交数量
+            position.trade_amount += trade.trade_amount;                      // 增加成交总金额
+            position.cost_price = position.trade_amount / position.trade_qty; // 计算成本价
+            position.trade_avg_price = position.cost_price;                   // 计算成交均价
 
-        // 刷新Trade界面显示
-        OrderTraded(acc_index, TradeData{
-                                   trade.order_xtp_id,
-                                   trade.ticker,
-                                   trade.side,
-                                   trade_time,
-                                   trade.price,
-                                   trade.quantity,
-                                   trade.trade_amount,
-                                   position.trade_avg_price});
+            // 刷新Trade界面显示
+            OrderTraded(acc_index, TradeData{
+                                       trade.order_xtp_id,
+                                       trade.ticker,
+                                       trade.side,
+                                       trade_time,
+                                       trade.price,
+                                       trade.quantity,
+                                       trade.trade_amount,
+                                       position.trade_avg_price});
 
-        // 更新资金信息
-        auto &asset = mAsset[acc_index];
-        double order_amount = trade.quantity * resting_order.price;
-        asset.buying_power += order_amount;
-        asset.buying_power -= trade.trade_amount;
-        asset.withholding_amount -= order_amount;
+            // 更新资金信息
+            auto &asset = mAsset[acc_index];
+            double order_amount = trade.quantity * resting_order.price;
+            asset.buying_power += order_amount;
+            asset.buying_power -= trade.trade_amount;
+            asset.withholding_amount -= order_amount;
 
-        // 挂单全部成交时删除
-        if (resting_order.quantity == 0)
-            position.resting_orders.erase(trade.order_xtp_id);
+            // 挂单全部成交时删除
+            if (resting_order.quantity == 0)
+                position.resting_orders.erase(trade.order_xtp_id);
 
-        // 刷新Asset界面显示
-        asset.security_asset = 0;
-        for (auto &p : asset.positions)
-            asset.security_asset += p.second.total_qty * p.second.last_price;
-        qCInfo(XTPTrader) << QStringLiteral("买入证券成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
-        AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+            // 刷新Asset界面显示
+            asset.security_asset = 0;
+            for (auto &p : asset.positions)
+                asset.security_asset += p.second.total_qty * p.second.last_price;
+            qCInfo(XTPTrader) << QStringLiteral("买入证券成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
+            AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+        }
+        catch (const std::exception &e)
+        {
+            qCCritical(XTPTrader) << QStringLiteral("买入证券资产成交时越界错误：") << e.what();
+        }
     }
 
     void Trader::order_buy_traded(size_t acc_index, const XTPOrderInfo &order)
@@ -620,51 +627,58 @@ namespace HuiFu
         // 读取股票名称
         QString stock_code{trade.ticker};
 
-        // 找到账户仓位
-        auto &position = mAsset[acc_index].positions.at(stock_code);
-        // 找到仓位下成交的挂单
-        auto &resting_order = position.resting_orders.at(trade.order_xtp_id);
-        // 减少挂单数量
-        resting_order.quantity -= trade.quantity;
-        // 更新仓位信息
-        position.total_qty -= trade.quantity;                                  // 减少仓位数量
-        position.last_price = trade.price;                                     // 更新仓位价格
-        position.trade_qty += trade.quantity;                                  // 增加成交数量
-        position.trade_amount += trade.trade_amount;                           // 增加成交总金额
-        position.trade_avg_price = position.trade_amount / position.trade_qty; // 计算成交均价
+        try
+        {
+            // 找到账户仓位
+            auto &position = mAsset[acc_index].positions.at(stock_code);
+            // 找到仓位下成交的挂单
+            auto &resting_order = position.resting_orders.at(trade.order_xtp_id);
+            // 减少挂单数量
+            resting_order.quantity -= trade.quantity;
+            // 更新仓位信息
+            position.total_qty -= trade.quantity;                                  // 减少仓位数量
+            position.last_price = trade.price;                                     // 更新仓位价格
+            position.trade_qty += trade.quantity;                                  // 增加成交数量
+            position.trade_amount += trade.trade_amount;                           // 增加成交总金额
+            position.trade_avg_price = position.trade_amount / position.trade_qty; // 计算成交均价
 
-        // 刷新Order界面显示
-        OrderTraded(acc_index, TradeData{
-                                   trade.order_xtp_id,
-                                   trade.ticker,
-                                   trade.side,
-                                   trade_time,
-                                   trade.price,
-                                   trade.quantity,
-                                   trade.trade_amount,
-                                   position.trade_avg_price});
+            // 刷新Order界面显示
+            OrderTraded(acc_index, TradeData{
+                                       trade.order_xtp_id,
+                                       trade.ticker,
+                                       trade.side,
+                                       trade_time,
+                                       trade.price,
+                                       trade.quantity,
+                                       trade.trade_amount,
+                                       position.trade_avg_price});
 
-        // 计算之前卖出预扣费用
-        double holding_amount = 0.0;
-        if (resting_order.trade_amount > numeric_limits<double>::epsilon())
+            // 计算之前卖出预扣费用
+            double holding_amount = 0.0;
+            if (resting_order.trade_amount > numeric_limits<double>::epsilon())
+                holding_amount = max(resting_order.trade_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + resting_order.trade_amount * WITHHOLD_SELL_RATE;
+            // 更新资金信息
+            auto &asset = mAsset[acc_index];
+            asset.buying_power += holding_amount + trade.trade_amount;
+
+            // 增加挂单成交总额
+            resting_order.trade_amount += trade.trade_amount;
+            // 计算累计卖出预扣费用
             holding_amount = max(resting_order.trade_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + resting_order.trade_amount * WITHHOLD_SELL_RATE;
-        // 更新资金信息
-        auto &asset = mAsset[acc_index];
-        asset.buying_power += holding_amount + trade.trade_amount;
+            // 更新资金信息
+            asset.buying_power -= holding_amount;
 
-        // 增加挂单成交总额
-        resting_order.trade_amount += trade.trade_amount;
-        // 计算累计卖出预扣费用
-        holding_amount = max(resting_order.trade_amount * WITHHOLD_SELL_SPECIAL_RATE, 8.0) + resting_order.trade_amount * WITHHOLD_SELL_RATE;
-        // 更新资金信息
-        asset.buying_power -= holding_amount;
-
-        // 刷新Asset界面显示
-        asset.security_asset = 0;
-        for (auto &p : asset.positions)
-            asset.security_asset += p.second.total_qty * p.second.last_price;
-        qCInfo(XTPTrader) << QStringLiteral("卖出证券成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
-        AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+            // 刷新Asset界面显示
+            asset.security_asset = 0;
+            for (auto &p : asset.positions)
+                asset.security_asset += p.second.total_qty * p.second.last_price;
+            qCInfo(XTPTrader) << QStringLiteral("卖出证券成交时：") << asset.buying_power << asset.withholding_amount << asset.security_asset;
+            AssetReceived(acc_index, AssetData{asset.buying_power, asset.withholding_amount, asset.security_asset});
+        }
+        catch (const std::exception &e)
+        {
+            qCCritical(XTPTrader) << QStringLiteral("卖出证券资产成交时越界错误：") << e.what();
+        }
     }
 #pragma endregion
 
@@ -715,7 +729,7 @@ namespace HuiFu
         mOrder.price_type = XTP_PRICE_LIMIT;
         mOrder.quantity = 0;
         mOrder.position_effect = XTP_POSITION_EFFECT_INIT;
-        mOrder.order_client_id = 100;
+        mOrder.order_client_id = ORDER_SELL_CLIENT_ID;
     }
 
     Trader::~Trader()

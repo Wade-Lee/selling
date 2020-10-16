@@ -55,7 +55,6 @@ namespace HuiFu
         std::vector<uint64_t> mSessionIDs;
         std::vector<Asset> mAsset;
         size_t get_account_index(uint64_t) const;
-        size_t get_account_index(uint64_t, uint32_t) const;
 
     public slots:
         void OnPositionQuoteReceived(const TraderMarketData &);

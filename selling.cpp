@@ -9,6 +9,8 @@
 #include <QDateTime>
 #include <QFile>
 
+#pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
+
 using namespace HuiFu;
 
 void MessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)

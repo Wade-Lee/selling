@@ -15,7 +15,7 @@ TipsDialog::TipsDialog(const QString &msg, QWidget *parent) : QDialog(parent),
 
     ui->label->setText(msg);
     mRect = QGuiApplication::primaryScreen()->geometry();
-    move((mRect.width() - this->width()), mRect.height() - this->height());
+    move(0, mRect.height() - this->height());
     pTimer = new QTimer(this);
     pTimer->start(5000);
     pTimer->setSingleShot(true);

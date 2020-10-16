@@ -411,11 +411,15 @@ void GuiMain::OnOrderTraded(size_t id, const HuiFu::TradeData &d)
 {
     auto &cfg = Config::get_instance().get_accounts_config();
     QString text = QString(cfg[id].user.c_str());
-    text += QStringLiteral(" 卖出股票：");
+    if (d.side == XTP_SIDE_BUY)
+        text += QStringLiteral(" 买入：");
+    else
+        text += QStringLiteral(" 卖出：");
     text += d.stock_code;
-    text += QStringLiteral(" 卖出价格：");
+    text += "\n";
+    text += QStringLiteral(" 价格：");
     text += QString::number(d.price, 'f', 2);
-    text += QStringLiteral(" 卖出数量：");
+    text += QStringLiteral(" 数量：");
     text += QString::number(d.quantity);
     dlg = new TipsDialog(text);
     dlg->show();

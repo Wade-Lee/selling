@@ -12,7 +12,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>400</width>
     <height>300</height>
    </rect>
   </property>
@@ -27,12 +27,12 @@
     <rect>
      <x>20</x>
      <y>60</y>
-     <width>400</width>
+     <width>370</width>
      <height>70</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true"/>
+    <string notr="true">font: 75 16pt &quot;微软雅黑&quot;;</string>
    </property>
    <property name="text">
     <string/>
