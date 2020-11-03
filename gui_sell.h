@@ -113,7 +113,6 @@ public:
 
 #pragma region 可卖股数和卖出数量
 public slots:
-	void UserReqSellAllQty();
 	void UserEditSellQty(int);
 	void UserSelectSellQty(int);
 	void OnOrderReceived(size_t, const HuiFu::OrderData &);
@@ -137,9 +136,11 @@ private:
 #pragma endregion
 
 #pragma region 卖出和重置
-public slots:
+private:
 	void UserReqSelling();
 	void UserClear();
+
+public slots:
 	void OnOrderError(size_t, const QString &, const QString &, int32_t);
 	void OnOrderRefused(size_t, const QString &);
 

@@ -18,6 +18,11 @@ GuiTradeTab::GuiTradeTab(QWidget *parent) : QTabWidget(parent),
 {
     ui->setupUi(this);
 
+    ui->sellablePositionTable->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    ui->positionTable->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    ui->orderTradeTable->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    ui->orderInsertTable->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
     ui->sellablePositionTable->installEventFilter(this);
     ui->orderTable->installEventFilter(this);
     ui->positionTable->installEventFilter(this);

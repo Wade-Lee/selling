@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="focusPolicy">
-   <enum>Qt::ClickFocus</enum>
+   <enum>Qt::TabFocus</enum>
   </property>
   <property name="windowTitle">
    <string>TabWidget</string>
@@ -29,6 +29,9 @@
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <widget class="QTableWidget" name="sellablePositionTable">
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
       </property>
@@ -111,6 +114,9 @@
         <height>757</height>
        </size>
       </property>
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
       </property>
@@ -180,7 +186,7 @@
     <item>
      <widget class="QTableWidget" name="positionTable">
       <property name="focusPolicy">
-       <enum>Qt::StrongFocus</enum>
+       <enum>Qt::TabFocus</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
@@ -264,7 +270,7 @@
        <bool>true</bool>
       </property>
       <property name="focusPolicy">
-       <enum>Qt::StrongFocus</enum>
+       <enum>Qt::TabFocus</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>
@@ -343,7 +349,7 @@
        <bool>true</bool>
       </property>
       <property name="focusPolicy">
-       <enum>Qt::StrongFocus</enum>
+       <enum>Qt::TabFocus</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">selection-background-color: rgb(24, 112, 255);</string>

@@ -76,6 +76,11 @@ GuiSell::GuiSell(QWidget *parent) : QWidget(parent), ui(new Ui::GuiSell), id(Gui
 
 	Activate(true);
 
+	ui->stockCode->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	ui->sellPrice->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	ui->sellQty->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	ui->sellBtn->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
 	ui->stockCode->installEventFilter(this);
 	ui->sellPrice->installEventFilter(this);
 	ui->sellQty->installEventFilter(this);
@@ -299,12 +304,6 @@ double GuiSell::GetSellPrice() const
 #pragma endregion
 
 #pragma region 可卖股数和卖出数量
-void GuiSell::UserReqSellAllQty()
-{
-	SetSellQty(0);
-	req_stock_info();
-}
-
 void GuiSell::UserEditSellQty(int qty)
 {
 	if (!ui->sellQty->hasFocus())
