@@ -465,7 +465,7 @@ void GuiSell::UserReqSelling()
 	long quantity = ui->sellQty->value();
 
 	auto pQSI = StockStaticInfo::GetInstance().GetQSI(current_stock_code);
-	if (price < pQSI->lower_limit_price)
+	if (price < pQSI->lower_limit_price && fabs(price - pQSI->lower_limit_price) > 0.001)
 	{
 		QString text = current_stock_code;
 		text += QStringLiteral("卖出价格低于跌停价：");
@@ -476,7 +476,7 @@ void GuiSell::UserReqSelling()
 		return;
 	}
 
-	if (price > pQSI->upper_limit_price)
+	if (price > pQSI->upper_limit_price && fabs(price - pQSI->upper_limit_price) > 0.001)
 	{
 		QString text = current_stock_code;
 		text += QStringLiteral("卖出价格高于涨停价：");
